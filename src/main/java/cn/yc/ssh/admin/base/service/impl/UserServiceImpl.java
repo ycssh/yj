@@ -1,9 +1,11 @@
 package cn.yc.ssh.admin.base.service.impl;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,7 @@ import cn.yc.ssh.admin.base.entity.Resource;
 import cn.yc.ssh.admin.base.entity.Role;
 import cn.yc.ssh.admin.base.entity.User;
 import cn.yc.ssh.admin.base.entity.UserAllInfo;
+import cn.yc.ssh.admin.base.mybatis.mapper.UserMapper;
 import cn.yc.ssh.admin.base.service.RoleService;
 import cn.yc.ssh.admin.base.service.UserService;
 import cn.yc.ssh.admin.base.util.PageResult;
@@ -26,6 +29,8 @@ public class UserServiceImpl implements UserService {
 	private PasswordHelper passwordHelper;
 	@Autowired
 	private RoleService roleService;
+	@Autowired
+	private UserMapper userMapper;
 
 	/**
 	 * 创建用户
@@ -124,6 +129,12 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public PageResult<User> find(User user, Boolean cascade, Pagination page) {
+//		userMapper.
+		RowBounds bounds = new RowBounds(page.getPage(),page.getRows());
+		cn.yc.ssh.admin.base.mybatis.model.User u= new cn.yc.ssh.admin.base.mybatis.model.User();
+		u.setName(user.getName());
+		List<cn.yc.ssh.admin.base.mybatis.model.User> users = userMapper.select(u, bounds);
+		int count = userMapper.selectCount(u);
 		return userDao.find(user, cascade, page);
 	}
 	

@@ -39,10 +39,6 @@ String userRealName = (String)session.getAttribute("userRealNameForIndexPage");
 	var currPanel = null;
 	var tabsMenu,centerTabs;
 	$(function() {
-	
-		//检测工作流是否有待办任务,初始执行一次，之后每两秒执行一次
-		workFlowMessageFunction();
-		setInterval(function(){workFlowMessageFunction();}, 5000);
 		//绑定待办任务点击事件
 		messageClickFunction();
 	
@@ -92,22 +88,6 @@ String userRealName = (String)session.getAttribute("userRealNameForIndexPage");
 		}		
 	});
 	
-	
-	//检测工作流是否有待办任务
-	var workFlowMessageFunction = function(){
-		$.post('${pageContext.request.contextPath}/workmgt/messageNum')
-		.done(function(data){
-			//console.log(data);
-			
-			//判断是否为数字 ,若不为数字，则返回空值
-			if(isNaN(data)){
-				return null;
-			}
-			
-			$('#messageNum').html(data);
-		})
-		.fail(function(){});
-	};
 	
 	//绑定待办任务点击事件
 	var messageClickFunction = function(){

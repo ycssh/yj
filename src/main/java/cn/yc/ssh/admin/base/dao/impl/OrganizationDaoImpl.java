@@ -90,10 +90,7 @@ public class OrganizationDaoImpl implements OrganizationDao {
 		String sql = "select id,name,parentId,power from sys_organization where parentId=?";
 		if (pId == null) {
 			sql = "select id,name,parentId  from sys_organization where parentId is null";
-			List<Organization> list = jdbcTemplate
-					.query(PageSqlUtil.getPageSql(sql, page),
-							new BeanPropertyRowMapper<Organization>(
-									Organization.class));
+			List<Organization> list = jdbcTemplate.query(PageSqlUtil.getPageSql(sql, page),new BeanPropertyRowMapper<Organization>(Organization.class));
 			int count = jdbcTemplate.queryForObject(PageSqlUtil.getCountSql(sql), Integer.class);
 			return new PageResult<Organization>(list, count);
 		}
