@@ -3,12 +3,15 @@ package cn.yc.ssh.admin.base.service;
 import java.util.List;
 import java.util.Set;
 
-import cn.yc.ssh.admin.base.entity.Resource;
-import cn.yc.ssh.admin.base.entity.Role;
-import cn.yc.ssh.admin.base.entity.User;
 import cn.yc.ssh.admin.base.entity.UserAllInfo;
+import cn.yc.ssh.admin.base.mybatis.model.Resource;
+import cn.yc.ssh.admin.base.mybatis.model.Role;
+import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.base.util.PageResult;
 import cn.yc.ssh.admin.base.util.Pagination;
+
+import com.github.pagehelper.Page;
+
 
 public interface UserService {
 
@@ -67,7 +70,7 @@ public interface UserService {
      * @param page 
      * @return
      */
-	public PageResult<User> find(User user, Boolean cascade, Pagination page);
+	public Page<User> find(User user, Boolean cascade, Pagination page);
 	
 	
 	/**

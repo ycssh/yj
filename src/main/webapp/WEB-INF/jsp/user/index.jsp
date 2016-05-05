@@ -89,13 +89,12 @@ var tableLoad = function(){
 	
 	//表格内容加载
 	$('#dg').datagrid({
-		url : '<%=basePath%>user/listNew',
+		url : '<%=basePath%>user/list',
 		queryParams:{
 			isSelect:'1',//是否查询，用于组织easy-ui重复查询
-			loginName: loginName,//登陆账号
-			realName: realName,//姓名
+			username: loginName,//登陆账号
+			name: realName,//姓名
 			locked: locked,//账户状态
-			syURoleId: syURoleId,//角色分配状态
 			organizationId: nowOrganizationId//部门ID
 	    },
 		method:'post',
@@ -574,15 +573,13 @@ function resetPassword()
 	<!-- 显示的表格 -->
 	<div data-options="region:'center',href:'',title:'用户列表'"
 		style="overflow: hidden;" id="center">
-		<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'">
+		<table id="dg"  data-options="toolbar:'#tb'">
 			<thead>
 				<tr>
 					<th data-options="field:'ck',checkbox:true"></th>
-					<th data-options="field:'userId'" align="center">用户Id</th>
-					<th data-options="field:'loginName'" width="20%" align="center">用户名</th>
-					<th data-options="field:'realName'" width="20%" align="center">姓名</th>
-					<th data-options="field:'orgName'" width="20%" align="center">所属部门</th>
-					<th data-options="field:'userState'" width="10%" align="center">账号状态</th>
+					<th data-options="field:'id'" align="center">用户Id</th>
+					<th data-options="field:'username'" width="20%" align="center">用户名</th>
+					<th data-options="field:'name'" width="20%" align="center">姓名</th>
 					<th
 						data-options="field:'roleName',formatter:function(value,row,index){value = value==null?'':value; return'<span title='+value+'>'+value+'</span>'} "
 						width="20%" align="center">角色名称</th>
@@ -606,11 +603,6 @@ function resetPassword()
 					
 	<shiro:hasPermission name="admin:user:setRole">					
 			<a href="javascript:void(0);" id ="table-ok" class="easyui-linkbutton" iconCls="icon-ok" plain="true">分配用户角色</a>
-	</shiro:hasPermission>
-	
-	<shiro:hasPermission name="admin:user:pass">
-			<a href="javascript:void(0);" id ="table-locked-is" class="easyui-linkbutton" iconCls="icon-ok" plain="true">账号审核</a>
-			<a href="javascript:void(0);" id ="table-userRole-is" class="easyui-linkbutton" iconCls="icon-ok" plain="true">角色分配审核</a>
 	</shiro:hasPermission>
 			
 	</div> 

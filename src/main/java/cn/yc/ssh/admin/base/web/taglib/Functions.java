@@ -8,9 +8,9 @@ import org.apache.shiro.subject.support.DefaultSubjectContext;
 import org.springframework.util.CollectionUtils;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.Organization;
-import cn.yc.ssh.admin.base.entity.Resource;
-import cn.yc.ssh.admin.base.entity.Role;
+import cn.yc.ssh.admin.base.mybatis.model.Organization;
+import cn.yc.ssh.admin.base.mybatis.model.Resource;
+import cn.yc.ssh.admin.base.mybatis.model.Role;
 import cn.yc.ssh.admin.base.service.OrganizationService;
 import cn.yc.ssh.admin.base.service.ResourceService;
 import cn.yc.ssh.admin.base.service.RoleService;

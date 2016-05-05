@@ -11,7 +11,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.User;
+import cn.yc.ssh.admin.base.mybatis.model.User;
 
 public class LogRecordInterceptor implements HandlerInterceptor, ApplicationContextAware {
 	private ApplicationContext ctx;

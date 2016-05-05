@@ -170,7 +170,7 @@ var tableLoad = function(){
 	
 	<!-- easy-ui显示的表格 -->
 	<div data-options="region:'center',href:'',title:'dota'" style="overflow: hidden;" id="center">
-		<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'">
+		<table id="dg"  data-options="toolbar:'#tb'">
 				<thead>  
 						<tr> 
 							<th field="deptName"   width="10" align="center" resizable="true">专业培训部</th> 

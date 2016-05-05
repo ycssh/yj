@@ -33,8 +33,6 @@ var tableResetButton =function(){
 	$('#role').val("");
 	//角色名称
 	$('#name').val("");
-	//角色状态
-	$('#state').combobox("setValue","");
 	//表格显示函数
 	tableLoad();
 };
@@ -47,8 +45,6 @@ var tableLoad = function(){
 	var role = $.trim($('#role').val());
 	//角色名称
 	var name = $.trim($('#name').val());
-	//角色状态
-	var state = $.trim($('#state').combobox('getValue'));
 	
 	//表格内容加载
 	$('#dg').datagrid({
@@ -56,8 +52,7 @@ var tableLoad = function(){
 		queryParams:{
 			isSelect:'1',//是否查询，用于阻止easy-ui重复查询
 			role: role,//角色代码
-			name: name,//角色名称
-			state: state,//角色状态
+			name: name//角色名称
 	    },
 		method:'post',
 		onRowContextMenu:onRowContextMenu
@@ -89,10 +84,6 @@ function roleEdit(){
     	$.messager.alert('提示','请选择要编辑的记录');
     	return ;
 	}
-	if(row.role=="TDMS001"||row.role=="TDMS002"||row.role=="TDMS003"||row.role=="TDMS004"||row.role=="TDMS005"){
-    	$.messager.alert('提示','不能对系统角色分配资源');
-    	return ;
-	}
 	$("#appendChild").dialog({
 	    title: '编辑角色',
 	    width: 400,
@@ -114,13 +105,9 @@ function roleDelete(){
     	$.messager.alert('提示','请选择要删除的记录');
     	return ;
 	}
-	if(row.role=="TDMS001"||row.role=="TDMS002"||row.role=="TDMS003"||row.role=="TDMS004"||row.role=="TDMS005"){
-    	$.messager.alert('提示','不能对系统角色分配资源');
-    	return ;
-	}
 	if(confirm("确定删除?")){
 		$.post("<%=basePath%>role/delete/"+row.id,{},function(data){
-	    	$.messager.alert('提示','已将状态改为待删除，需审核后删除');
+	    	$.messager.alert('提示','删除成功');
 	    	//表格显示函数
 	    	tableLoad();
 		},"json");
@@ -136,18 +123,6 @@ function roleDelete(){
 	    	$.messager.alert('提示','请选择要分配的角色记录');
 	    	return ;
 		}
-		if(row.role=="TDMS001"||row.role=="TDMS002"||row.role=="TDMS003"||row.role=="TDMS004"||row.role=="TDMS005"){
-	    	$.messager.alert('提示','不能对系统角色分配资源');
-	    	return ;
-		}
-		//获取当前用户 角色编码 ，根据不同的用户编码显示不同的资源
-		$.post('<%=basePath%>role/nowUserRoleCode')
-			.done(function(data){
-				//获取用户显示资源权限	
-				if(data == null || data.length ==0 || data =='no'){
-					$.messager.alert('提示','无权限进行操作');
-					return ;
-				}else{
 					$("#resources").window({
 						title: '分配资源',
 						width: 400,
@@ -159,12 +134,6 @@ function roleDelete(){
 					    	tableLoad();
 						}
 					});
-				}
-			})
-			.fail(function(){
-				$.messager.alert('提示','操作错误');
-		    	return ;
-			});
 	}
 	
 	
@@ -230,14 +199,13 @@ function roleDelete(){
 
 	<!-- 显示的表格 -->
 	<div data-options="region:'center',href:'',title:'权限列表'" style="overflow: hidden;" id="center">
-		<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'">
+		<table id="dg" data-options="toolbar:'#tb'">
 					<thead>  
 							<tr>  
 								<th field="ck" checkbox="true"></th>
 								<th field="id" >角色编号</th>  
 								<th field="role" >角色编码</th> 
-								<th field="name" >角色名称</th>  
-								<th field="stateName" >角色状态</th>  
+								<th field="name" >角色名称</th>   
 							</tr>  
 					 </thead>  
 		</table>
@@ -247,19 +215,10 @@ function roleDelete(){
 	<!-- 表格工具栏 -->
 	<div id="tb" style="padding:5px;">
 		<div style="margin-bottom:5px">
-			<shiro:hasPermission name="admin:role:edit">
-				<a href="javascript:void(0);" id ="table-add" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
-				<a href="javascript:void(0);" id ="table-edit" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
-				<a href="javascript:void(0);" id ="table-remove" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
-			</shiro:hasPermission>	
-			
-			<shiro:hasPermission name="admin:role:resourceTo">
-				<a href="javascript:void(0);" id ="table-resource-ok" class="easyui-linkbutton" iconCls="icon-ok" plain="true">分配资源</a>
-			</shiro:hasPermission>	
-				
-			<shiro:hasPermission name="admin:role:pass">	
-				<a href="javascript:void(0);" id ="table-role-ok" class="easyui-linkbutton" iconCls="icon-ok" plain="true">审核角色</a>
-			</shiro:hasPermission>
+			<a href="javascript:void(0);" id ="table-add" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+			<a href="javascript:void(0);" id ="table-edit" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+			<a href="javascript:void(0);" id ="table-remove" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+			<a href="javascript:void(0);" id ="table-resource-ok" class="easyui-linkbutton" iconCls="icon-ok" plain="true">分配资源</a>
 		</div> 
 
 		<div>
@@ -267,13 +226,6 @@ function roleDelete(){
 			<input id="role" class="easyui-textbox" style="line-height:17px;width:100px;border:1px solid #ccc">
 			&nbsp;角色名称:
 			<input id="name" class="easyui-textbox" data-options="min:1,max:12" style="line-height:17px;width:100px;border:1px solid #ccc">
-			&nbsp;角色状态: 
-			<select id ="state" class="easyui-combobox" panelHeight="auto" style="width:100px" editable = "false">
-				<option value="">不限</option>
-				<option value="1">无效</option>
-				<option value="0">生效</option>
-				<option value="2">待删除</option>
-			</select>
 			
 			&nbsp;
 			<a id ="tableSearchButton" href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-search">查询</a>

@@ -14,7 +14,6 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.dao.ISyslogDAO;
 import cn.yc.ssh.admin.base.entity.Message;
 import cn.yc.ssh.admin.base.entity.User;
 import cn.yc.ssh.admin.base.service.IMessageService;
@@ -23,8 +22,6 @@ import cn.yc.ssh.admin.log.SysOperLog;
 
 public class DefaultExceptionHandler implements HandlerExceptionResolver {
 
-	@Resource
-	private ISyslogDAO syslogDAO; 
 	@Resource
 	private UserService userService; 
 	
@@ -49,7 +46,7 @@ public class DefaultExceptionHandler implements HandlerExceptionResolver {
 			log.setOperType(Constants.SYSLOG_ADD);
 			log.setTitle("越权访问");
 			log.setResult(Constants.SYSLOG_RESULT_FAIL);
-			syslogDAO.add(log);
+//			syslogDAO.add(log);
 			userService.updateState(1, user.getUsername());
 			Message message = new Message();
 			message.setContent("越权访问"+ex.getMessage());

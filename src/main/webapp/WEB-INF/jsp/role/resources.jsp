@@ -38,7 +38,7 @@ var setting = {
 		simpleData : {
 			enable : true,
 			idKey : "id",
-			pIdKey : "pid",
+			pIdKey : "parentId",
 			rootPId : 0
 		}
 	},

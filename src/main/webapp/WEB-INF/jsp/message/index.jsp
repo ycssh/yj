@@ -118,7 +118,7 @@ var toRead = function(){
 <body>
 	
 <!-- 显示的表格 -->
-<table id="dg" class="easyui-datagrid"  data-options="toolbar:'#tb',singleSelect:false">
+<table id="dg"   data-options="toolbar:'#tb',singleSelect:false">
 	<thead>
 		<tr>
 			<th data-options="field:'ck',checkbox:true"></th>

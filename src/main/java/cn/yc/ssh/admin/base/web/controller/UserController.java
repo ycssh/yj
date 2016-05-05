@@ -1,7 +1,10 @@
 package cn.yc.ssh.admin.base.web.controller;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,9 +29,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.Role;
-import cn.yc.ssh.admin.base.entity.User;
 import cn.yc.ssh.admin.base.entity.UserAllInfo;
+import cn.yc.ssh.admin.base.mybatis.model.Resource;
+import cn.yc.ssh.admin.base.mybatis.model.Role;
+import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.base.realm.AES;
 import cn.yc.ssh.admin.base.realm.MD5Util;
 import cn.yc.ssh.admin.base.realm.UserRealm;
@@ -39,6 +43,8 @@ import cn.yc.ssh.admin.base.util.Message;
 import cn.yc.ssh.admin.base.util.PageResult;
 import cn.yc.ssh.admin.base.util.Pagination;
 import cn.yc.ssh.admin.log.SysOperLog;
+
+import com.github.pagehelper.Page;
 
 @Controller
 @RequestMapping("/user")
@@ -69,16 +75,42 @@ public class UserController {
 	public @ResponseBody
 	PageResult<User> list(Model model, User user, Boolean cascade,
 			Pagination page) {
-		return userService.find(user, cascade, page);
+		return PageResult.toPage(userService.find(user, cascade, page));
 	}
 
 	@RequestMapping("listall")
-	//@RequiresPermissions("user:index")
 	@RequiresPermissions(value={"user:index","admin:workflowmgt:index"},logical=Logical.OR)
 	public @ResponseBody
 	List<User> list(Model model) {
 		return userService.findAll();
 	}
+	
+
+    @RequestMapping("/resources")
+    public @ResponseBody List<Resource> frontList(){
+		String username = SecurityUtils.getSubject().getPrincipal().toString();
+		User user = userService.findByUsername(username);
+    	List<Resource> resources = userService.findResByUse(user.getId());
+
+		List<Resource> resources2 = new ArrayList<Resource>();
+		Set<Long> set = new HashSet<Long>();
+		for (Resource resource : resources) {
+			while (!set.contains(resource.getId())) {
+				set.add(resource.getId());
+				List<Resource> children = new ArrayList<Resource>();
+				for (Resource resource2 : resources) {
+					if (resource2.getParentId().equals(resource.getId())&&"menu".equals(resource2.getType())) {
+						children.add(resource2);
+					}
+				}
+				resource.setChildren(children);
+			}
+			if (resource.getParentId() == 0) {
+				resources2.add(resource);
+			}
+		}
+		return resources2;
+    }
 
 	@RequestMapping(value = "/add/{organizationId}", method = RequestMethod.GET)
 	@RequiresPermissions("user:index")

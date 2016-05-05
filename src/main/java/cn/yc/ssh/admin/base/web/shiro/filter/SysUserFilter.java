@@ -18,9 +18,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.CollectionUtils;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.dao.ISyslogDAO;
 import cn.yc.ssh.admin.base.entity.Message;
-import cn.yc.ssh.admin.base.entity.User;
+import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.base.service.IMessageService;
 import cn.yc.ssh.admin.base.service.UserService;
 import cn.yc.ssh.admin.log.SysOperLog;
@@ -32,9 +31,6 @@ public class SysUserFilter extends PathMatchingFilter {
     private UserService userService;
 	@Resource
 	private IMessageService messageService; 
-    
-    @Resource
-    private ISyslogDAO syslogDAO;
 
 	@Resource
 	private JdbcTemplate jdbcTemplate;
@@ -81,7 +77,7 @@ public class SysUserFilter extends PathMatchingFilter {
 					log.setOpertime(new Date());
 					log.setLogType(Constants.SYSLOG_SYS);
 					log.setResult(Constants.SYSLOG_RESULT_FAIL);
-					syslogDAO.add(log);
+//					syslogDAO.add(log);
 	
 					Message message = new Message();
 					message.setContent("IP异常");
@@ -104,7 +100,7 @@ public class SysUserFilter extends PathMatchingFilter {
 			_log.setOpertime(new Date());
 			_log.setLogType(Constants.SYSLOG_SYS);
 			_log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-			syslogDAO.add(_log);
+//			syslogDAO.add(_log);
         }else{
         	User user = (User) session.getAttribute(Constants.CURRENT_USER);
         	request.setAttribute(Constants.CURRENT_USER, user);

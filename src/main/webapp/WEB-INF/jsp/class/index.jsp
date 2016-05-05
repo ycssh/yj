@@ -35,7 +35,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			    </div>
 		            
 		    </div>
-			<table id="dg" class="easyui-datagrid" style="width: 100%" toolbar="#tb">
+			<table id="dg"  style="width: 100%" toolbar="#tb">
 				<thead>  
 				        <tr>  
 							<th field="ck" checkbox="true"></th>

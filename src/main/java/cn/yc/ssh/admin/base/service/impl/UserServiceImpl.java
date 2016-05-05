@@ -1,36 +1,48 @@
 package cn.yc.ssh.admin.base.service.impl;
 
-import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import cn.yc.ssh.admin.base.dao.UserDao;
-import cn.yc.ssh.admin.base.entity.Resource;
-import cn.yc.ssh.admin.base.entity.Role;
-import cn.yc.ssh.admin.base.entity.User;
 import cn.yc.ssh.admin.base.entity.UserAllInfo;
+import cn.yc.ssh.admin.base.mybatis.mapper.ResourceMapper;
+import cn.yc.ssh.admin.base.mybatis.mapper.RoleMapper;
 import cn.yc.ssh.admin.base.mybatis.mapper.UserMapper;
+import cn.yc.ssh.admin.base.mybatis.mapper.UserRoleMapper;
+import cn.yc.ssh.admin.base.mybatis.model.Resource;
+import cn.yc.ssh.admin.base.mybatis.model.Role;
+import cn.yc.ssh.admin.base.mybatis.model.User;
+import cn.yc.ssh.admin.base.mybatis.model.UserRole;
 import cn.yc.ssh.admin.base.service.RoleService;
 import cn.yc.ssh.admin.base.service.UserService;
 import cn.yc.ssh.admin.base.util.PageResult;
 import cn.yc.ssh.admin.base.util.Pagination;
 
+import com.github.pagehelper.Page;
+
 @Service
 public class UserServiceImpl implements UserService {
-
-	@Autowired
-	private UserDao userDao;
+	
 	@Autowired
 	private PasswordHelper passwordHelper;
 	@Autowired
 	private RoleService roleService;
 	@Autowired
 	private UserMapper userMapper;
+	@Autowired
+	private UserRoleMapper userRoleMapper;
+	@Autowired
+	private RoleMapper roleMapper;
+	@Autowired
+	private ResourceMapper resourceMapper;
 
 	/**
 	 * 创建用户
@@ -38,20 +50,21 @@ public class UserServiceImpl implements UserService {
 	 * @param user
 	 */
 	public User createUser(User user) {
-//		user.setPassword("password");
 		// 加密密码
 		passwordHelper.encryptPassword(user);
-		return userDao.createUser(user);
+		Long id = userMapper.insert(user);
+		return userMapper.selectByPrimaryKey(id);
 	}
 
 	@Override
 	public User updateUser(User user) {
-		return userDao.updateUser(user);
+		userMapper.updateByPrimaryKeySelective(user);
+		return user;
 	}
 
 	@Override
-	public void deleteUser(Long userId) {
-		userDao.deleteUser(userId);
+	public void deleteUser(Long id) {
+		userMapper.deleteByPrimaryKey(id);
 	}
 
 	/**
@@ -61,31 +74,16 @@ public class UserServiceImpl implements UserService {
 	 * @param newPassword
 	 */
 	public void changePassword(Long userId, String newPassword) {
-		User user = userDao.findOne(userId);
+		User user = userMapper.selectByPrimaryKey(userId);
 		user.setPassword(newPassword);
 		passwordHelper.encryptPassword(user);
-		userDao.updatePwd(user);
-	}
-	public void changeresetPassword(Long userId, String newPassword) {
-		User user = userDao.findOne(userId);
-		user.setPassword(newPassword);
-		passwordHelper.encryptPassword(user);
-		userDao.updatePwdReset(user);
+		user.setUpdateTime(new Date());
+		userMapper.updateByPrimaryKeySelective(user);
 	}
 
 	@Override
 	public User findOne(Long userId) {
-		return userDao.findOne(userId);
-	}
-
-	@Override
-	public List<User> findAll() {
-		return userDao.findAll();
-	}
-	
-	@Override
-	public List<User> findWithOutAdmin() {
-		return userDao.findWithOutAdmin();
+		return userMapper.selectByPrimaryKey(userId);
 	}
 
 	/**
@@ -95,7 +93,10 @@ public class UserServiceImpl implements UserService {
 	 * @return
 	 */
 	public User findByUsername(String username) {
-		return userDao.findByUsername(username);
+		User user = new User();
+		user.setUsername(username);
+		Page<User> page = userMapper.select(user, new RowBounds(1,1));
+		return page.get(0);
 	}
 
 	/**
@@ -109,7 +110,13 @@ public class UserServiceImpl implements UserService {
 		if (user == null) {
 			return Collections.emptySet();
 		}
-		return roleService.findRoles(user.getRoleIds().toArray(new Long[0]));
+
+		List<Role> roles =  findRolesByUse(user.getId());
+		Set<String> set = new HashSet<String>();
+		for(Role role:roles){
+			set.add(role.getRole());
+		}
+		return set;
 	}
 
 	/**
@@ -123,78 +130,109 @@ public class UserServiceImpl implements UserService {
 		if (user == null) {
 			return Collections.emptySet();
 		}
-		return roleService.findPermissions(user.getRoleIds().toArray(
-				new Long[0]));
+		List<Resource> resources = resourceMapper.selectByUser(user.getId());
+		Set<String> set = new HashSet<String>();
+		for(Resource resource:resources){
+			set.add(resource.getPermission());
+		}
+		return set;
+		
 	}
 
 	@Override
-	public PageResult<User> find(User user, Boolean cascade, Pagination page) {
-//		userMapper.
+	public Page<User> find(User user, Boolean cascade, Pagination page) {
 		RowBounds bounds = new RowBounds(page.getPage(),page.getRows());
-		cn.yc.ssh.admin.base.mybatis.model.User u= new cn.yc.ssh.admin.base.mybatis.model.User();
-		u.setName(user.getName());
-		List<cn.yc.ssh.admin.base.mybatis.model.User> users = userMapper.select(u, bounds);
-		int count = userMapper.selectCount(u);
-		return userDao.find(user, cascade, page);
-	}
-	
-	@Override
-	public PageResult<UserAllInfo> pageSelect(Pagination page,
-			String loginName, String realName, Integer locked, String syURoleId ,Integer organizationId) {
-		
-		return userDao.pageSelect(page, loginName, realName, locked, syURoleId ,organizationId);
+		return userMapper.select(user, bounds);
 	}
 
 	public List<Role> findRolesByUse(Long userId) {
-		return userDao.findRolesByUse(userId);
+		return roleMapper.selectByUser(userId);
 	}
 
 	public List<Resource> findResByUse(Long userId) {
-		return userDao.findResByUse(userId);
+		return resourceMapper.selectByUser(userId);
 	}
 
 	@Override
 	public void saveRoles(Long id, String roles) {
-		userDao.saveRoles(id, roles);
+		userRoleMapper.deleteByUser(id);
+		if(StringUtils.hasLength(roles)){
+			List<UserRole> userRoles = new ArrayList<UserRole>();
+			for(String role:roles.split(",")){
+				UserRole userRole = new UserRole();
+				userRole.setUserId(id);
+				userRole.setRoleId(Long.parseLong(role));
+			}
+			userRoleMapper.insertBatch(userRoles);
+		}
 	}
 
 	@Override
-	public List<Role> findRolesByUser(Long id) {
-		return userDao.findRolesByUser(id);
+	public List<Role> findRolesByUser(Long userId) {
+		return roleMapper.selectByUser(userId);
 	}
 
 	@Override
 	public UserAllInfo findOneUseInfo(Long userId) {
-		
-		return userDao.findOneUseInfo(userId);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public int lockedOrDeleteUser(String userId ,String locdedId) {
-		
-		return userDao.lockedOrDeleteUser(userId, locdedId);
+	public List<User> findAll() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PageResult<UserAllInfo> pageSelect(Pagination page,
+			String loginName, String realName, Integer locked,
+			String syURoleId, Integer organizationId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int lockedOrDeleteUser(String userId, String locdedId) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public int updateUserByUserId(String userId, String userName,
 			String loginName) {
-		
-		return userDao.updateUserByUserId(userId, userName, loginName);
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
 	public int sysRoleUpdate(String userId) {
-		
-		return  userDao.sysRoleUpdate(userId);
+		// TODO Auto-generated method stub
+		return 0;
 	}
-	public void updateState(int state,String username){
-		userDao.updateState(state, username);
+
+	@Override
+	public List<User> findWithOutAdmin() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void updateState(int state, String username) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public int updateLockedByUseerID(String userId, int locked) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void changeresetPassword(Long id, String passwordaa) {
+		// TODO Auto-generated method stub
 		
-		return userDao.updateLockedByUseerID(userId, locked);
 	}
 
 }

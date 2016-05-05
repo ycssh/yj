@@ -10,39 +10,42 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import cn.yc.ssh.admin.base.dao.ResourceDao;
-import cn.yc.ssh.admin.base.entity.Resource;
+import cn.yc.ssh.admin.Constants;
+import cn.yc.ssh.admin.base.mybatis.mapper.ResourceMapper;
+import cn.yc.ssh.admin.base.mybatis.model.Resource;
 import cn.yc.ssh.admin.base.service.ResourceService;
 
 @Service
 public class ResourceServiceImpl implements ResourceService {
 
 	@Autowired
-	private ResourceDao resourceDao;
+	private ResourceMapper resourceMapper;
 
 	@Override
 	public Resource createResource(Resource resource) {
-		return resourceDao.createResource(resource);
+		resourceMapper.insert(resource);
+		return resource;
 	}
 
 	@Override
 	public Resource updateResource(Resource resource) {
-		return resourceDao.updateResource(resource);
+		resourceMapper.updateByPrimaryKeySelective(resource);
+		return resource;
 	}
 
 	@Override
 	public void deleteResource(Long resourceId) {
-		resourceDao.deleteResource(resourceId);
+		resourceMapper.deleteByPrimaryKey(resourceId);
 	}
 
 	@Override
 	public Resource findOne(Long resourceId) {
-		return resourceDao.findOne(resourceId);
+		return resourceMapper.selectByPrimaryKey(resourceId);
 	}
 
 	@Override
 	public List<Resource> findAll() {
-		return resourceDao.findAll();
+		return resourceMapper.selectAll();
 	}
 
 	@Override
@@ -66,7 +69,7 @@ public class ResourceServiceImpl implements ResourceService {
 			if (resource.isRootNode()) {
 				continue;
 			}
-			if (resource.getType() != Resource.ResourceType.menu) {
+			if (!"menu".equals(resource.getType())) {
 				continue;
 			}
 			if (!hasPermission(permissions, resource)) {
@@ -79,13 +82,10 @@ public class ResourceServiceImpl implements ResourceService {
 
 	@Override
 	public List<Resource> findMenus(Set<String> permissions, Long resourceId) {
-		List<Resource> allResources = resourceDao.findByParent(resourceId);
+		List<Resource> allResources = resourceMapper.selectByParent(resourceId);
 		List<Resource> menus = new ArrayList<Resource>();
 		for (Resource resource : allResources) {
-			// if(resource.isRootNode()) {
-			// continue;
-			// }
-			if (resource.getType() != Resource.ResourceType.menu) {
+			if (!"menu".equals(resource.getType())) {
 				continue;
 			}
 			if (!hasPermission(permissions, resource)) {
@@ -116,13 +116,19 @@ public class ResourceServiceImpl implements ResourceService {
 
 	@Override
 	public String hasChildren(Long resourceId) {
-		return resourceDao.hasChildren(resourceId);
+		String state = Constants.TREE_CLOSE;
+		List<Resource> list = resourceMapper.selectByParent(resourceId);
+		for(Resource r:list){
+			if("menu".equals(r.getType())){
+				return state;
+			}
+		}
+		return Constants.TREE_OPEN;
 	}
 
 	@Override
 	public List<Resource> tree() {
-		List<Resource> resources = resourceDao.findAll();
-
+		List<Resource> resources = resourceMapper.selectAll();
 		List<Resource> resources2 = new ArrayList<Resource>();
 		Set<Long> set = new HashSet<Long>();
 		for (Resource resource : resources) {
@@ -143,65 +149,13 @@ public class ResourceServiceImpl implements ResourceService {
 		return resources2;
 	}
 
-	@Override
-	public void updatePic(Resource r) {
-		
-		resourceDao.updatePic(r);
-	}
-
-	@Override
-	public List<Resource> frontList(Integer start,Integer limit) {
-		
-		List<Resource> resources = resourceDao.findFrontList(start==null?0:start,limit==null?1000:limit);
-		
-		List<Resource> resources2 = new ArrayList<Resource>();
-		Set<Long> set = new HashSet<Long>();
-		for (Resource resource : resources) {
-			while (!set.contains(resource.getId())) {
-				set.add(resource.getId());
-				List<Resource> children = new ArrayList<Resource>();
-				for (Resource resource2 : resources) {
-					if (resource2.getParentId().equals(resource.getId())) {
-						children.add(resource2);
-					}
-				}
-				resource.setChildren(children);
-			}
-			if (resource.getParentId() == 0) {
-				resources2.add(resource);
-			}
-		}
-		return resources2;
-	}
 
 	@Override
 	public void removeByIds(String ids) {
-		
-		resourceDao.deleteByIds(ids);
-	}
-
-	@Override
-	public List<Resource> treeByPower(String power) {
-		List<Resource> resources = resourceDao.findAllByPower(power);
-
-		List<Resource> resources2 = new ArrayList<Resource>();
-		Set<Long> set = new HashSet<Long>();
-		for (Resource resource : resources) {
-			while (!set.contains(resource.getId())) {
-				set.add(resource.getId());
-				List<Resource> children = new ArrayList<Resource>();
-				for (Resource resource2 : resources) {
-					if (resource2.getParentId().equals(resource.getId())) {
-						children.add(resource2);
-					}
-				}
-				resource.setChildren(children);
-			}
-			if (resource.getParentId() == 0) {
-				resources2.add(resource);
-			}
+		String[] arr = ids.split(",");
+		for(String id:arr){
+			resourceMapper.deleteByPrimaryKey(Long.parseLong(id));
 		}
-		return resources2;
 	}
 
 }

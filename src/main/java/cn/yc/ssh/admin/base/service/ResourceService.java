@@ -3,44 +3,29 @@ package cn.yc.ssh.admin.base.service;
 import java.util.List;
 import java.util.Set;
 
-import cn.yc.ssh.admin.base.entity.Resource;
+import cn.yc.ssh.admin.base.mybatis.model.Resource;
 
 public interface ResourceService {
 
+	Resource createResource(Resource resource);
 
-    public Resource createResource(Resource resource);
-    public Resource updateResource(Resource resource);
-    public void deleteResource(Long resourceId);
+	Resource updateResource(Resource resource);
 
-    Resource findOne(Long resourceId);
-    List<Resource> findAll();
+	void deleteResource(Long resourceId);
 
-    /**
-     * 得到资源对应的权限字符串
-     * @param resourceIds
-     * @return
-     */
-    Set<String> findPermissions(Set<Long> resourceIds);
+	Resource findOne(Long resourceId);
 
-    /**
-     * 根据用户权限得到菜单
-     * @param permissions
-     * @return
-     */
-    List<Resource> findMenus(Set<String> permissions);
-    
-    String hasChildren(Long resourceId);
-    
-    public List<Resource> findMenus(Set<String> permissions,Long resourceId);
-    /**
-     * 用于
-     * @return
-     */
+	List<Resource> findAll();
+
+	Set<String> findPermissions(Set<Long> resourceIds);
+
+	List<Resource> findMenus(Set<String> permissions);
+
+	List<Resource> findMenus(Set<String> permissions, Long resourceId);
+
+	public String hasChildren(Long resourceId);
+
 	public List<Resource> tree();
-	public void updatePic(Resource r);
-	public List<Resource> frontList(Integer start,Integer limit);
+
 	public void removeByIds(String ids);
-	
-	
-	public List<Resource> treeByPower(String power);
 }

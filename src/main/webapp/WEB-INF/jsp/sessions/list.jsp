@@ -36,7 +36,7 @@ String contextPath = request.getContextPath();
     <div  style="padding-top:8px;padding-left:3px;font-weight: bolder;font-size: 15.5px;color:red;">${msg}</div>
 	</c:if>
 	
-	<table id="dg" class="easyui-datagrid" title="当前在线人数：${sessionCount}人" style="width:700px;height:250px" 
+	<table id="dg"  title="当前在线人数：${sessionCount}人" style="width:700px;height:250px" 
 											data-options="singleSelect:true,collapsible:true">
 		<thead>
 			<tr>				

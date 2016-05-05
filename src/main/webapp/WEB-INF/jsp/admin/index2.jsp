@@ -186,7 +186,7 @@ String userRealName = (String)session.getAttribute("userRealNameForIndexPage");
 	
 	function initMenu(){
 		
-		$.post("resource/frontList",{},function(data){
+		$.post("user/resources",{},function(data){
 			
 			drawTopNav(data,5);
 		},"JSON");

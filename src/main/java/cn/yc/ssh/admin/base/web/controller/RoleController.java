@@ -20,9 +20,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.Resource;
-import cn.yc.ssh.admin.base.entity.Role;
-import cn.yc.ssh.admin.base.entity.User;
+import cn.yc.ssh.admin.base.mybatis.model.Resource;
+import cn.yc.ssh.admin.base.mybatis.model.Role;
+import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.base.service.ResourceService;
 import cn.yc.ssh.admin.base.service.RoleService;
 import cn.yc.ssh.admin.base.util.Message;
@@ -50,7 +50,7 @@ public class RoleController {
 	@RequestMapping(value="list")
 	@RequiresPermissions("role:index")
 	public @ResponseBody PageResult<Role> list(Model model, Pagination page,Role role) {
-		return roleService.find(page,role);
+		return PageResult.toPage(roleService.find(page,role));
 	}
 	
 	@RequestMapping(value = "/add", method = RequestMethod.GET)
@@ -65,26 +65,11 @@ public class RoleController {
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
 	@RequiresPermissions("role:index")
 	public void create(Role role, HttpServletResponse response ,HttpServletRequest request) throws IOException {
-
-		SysOperLog log = new SysOperLog();
 		if(role.getId()!=null){
 			roleService.updateRole(role);
-			log.setContent("编辑角色:"+role.getName());
-			log.setOperType(Constants.SYSLOG_EDIT);
-			log.setTitle("编辑角色");
 		}else{
-			//roleService.updateRole(role);
-			log.setContent("新增角色:"+role.getName());
-			log.setOperType(1);
-			log.setTitle("新增角色");
 			roleService.createRole(role);
 		}
-		log.setLogType(Constants.SYSLOG_SYS);
-		log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-		request.setAttribute(Constants.LOG_RECORD, log);
-		response.setContentType("text/html;charset=UTF-8");
-		response.getWriter().print("");
-		response.getWriter().flush();
 	}
 
 	@RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
@@ -109,11 +94,18 @@ public class RoleController {
 		return new Message();
 	}
 	
+	@RequestMapping(value = "/resources/{roleId}")
+	@RequiresPermissions("role:index")
+	public @ResponseBody List<Resource> getResources(@PathVariable("roleId")Long roleId) {
+		return roleService.findResByRole(roleId);
+	}
+	
 	@RequestMapping("/listall")
 	//@RequiresPermissions("role:index")
 	@RequiresPermissions(value={"role:index","admin:workflowmgt:index"},logical=Logical.OR)
 	public @ResponseBody List<Role> listAll(){
-		return roleService.listAll();
+//		return roleService.listAll();
+		return null;
 	}
 
 	private void setCommonData(Model model) {
@@ -123,14 +115,7 @@ public class RoleController {
 	@RequiresPermissions("admin:role:resourceTo")
 	@RequestMapping(value = "/editresources/{roleId}")
 	public String resources(@PathVariable("roleId")Long roleId, Model model) {	
-		
-		//获取用户
-		User user = (User) SecurityUtils.getSubject().getSession().getAttribute(Constants.CURRENT_USER);
-		//获取用户ID
-		Long userId = user.getId();
-		//获取用户访问sys_resource权限 "no" 代表无访问权限  ， "XTZY"代表系统资源, "YWZY"代办业务资源,"all"代表全部资源
-		roleService.resTypeForNowUser(userId);
-		model.addAttribute("resources",roleService.findResources(roleId));
+		model.addAttribute("resources",roleService.findResByRole(roleId));
 		model.addAttribute("roleId",roleId);
 		return "role/resources";
 	}
@@ -151,25 +136,10 @@ public class RoleController {
 	
 	
 	
-	@RequestMapping(value = "/resources/{roleId}")
-	@RequiresPermissions("role:index")
-	public @ResponseBody List<Resource> getResources(@PathVariable("roleId")Long roleId) {
-		
-		return roleService.findResources(roleId);
-	}
-	
 	@RequestMapping(value = "/saveresources/{roleId}")
 	@RequiresPermissions("role:index")
 	public @ResponseBody Map saveResources(@PathVariable("roleId")Long roleId,String resources, HttpServletRequest request) {
-		//获取用户
-		User user = (User) SecurityUtils.getSubject().getSession().getAttribute(Constants.CURRENT_USER);
-		//获取用户ID
-		Long userId = user.getId();
-		//获取用户访问sys_resource权限 "no" 代表无访问权限  ， "XTZY"代表系统资源, "YWZY"代办业务资源,"all"代表全部资源
-		String power = roleService.resTypeForNowUser(userId);
-		
-		roleService.saveResources(roleId,resources,power);
-
+		roleService.saveResources(roleId,resources);
 		SysOperLog log = new SysOperLog();
 		log.setContent("角色分配资源:"+roleId);
 		log.setOperType(1);
@@ -191,7 +161,7 @@ public class RoleController {
 		//获取用户访问sys_resource权限 "no" 代表无访问权限  ， "XTZY"代表系统资源, "YWZY"代办业务资源,"all"代表全部资源
 		String power = roleService.resTypeForNowUser(userId);
 		//资源
-		model.addAttribute("resources",roleService.findResources(roleId));
+		model.addAttribute("resources",roleService.findResByRole(roleId));
 		//角色ID
 		model.addAttribute("roleId",roleId);
 		
@@ -201,31 +171,32 @@ public class RoleController {
 	@RequestMapping(value = "/roleStateUpate/{roleId}")
 	@RequiresPermissions("role:index")
 	public @ResponseBody Map roleStateUpate(@PathVariable("roleId")Long roleId,String resources, HttpServletRequest request) {
-		//日志
-		SysOperLog log = new SysOperLog();
-		
-		//获取该角色的状态，获取状态id
-		Role role = roleService.getRoleByroleId(roleId);
-		//角色状态 0：有效  1：无效  2待删除
-		String stateId = role.getState() == null ? "0":role.getState();
-		
-		//审核操作
-		int result = roleService.rolePass(roleId, stateId);
-		
-		//根据用户状态进行不同操作
-		if(result > 0 && stateId.equals("1")){//角色审核
-			log.setContent("角色审核，角色ID:"+roleId);
-			log.setOperType(Constants.SYSLOG_EDIT);
-			log.setTitle("角色审核");
-		}else if(result > 0 && stateId.equals("2")){//角色删除	
-			log.setContent("角色删除，角色ID:"+roleId);
-			log.setOperType(Constants.SYSLOG_DELETE);
-			log.setTitle("角色删除");
-		}
-		log.setLogType(Constants.SYSLOG_SYS);
-		log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-		request.setAttribute(Constants.LOG_RECORD, log);
-		return CommonUtils.wrapObject("");
+//		//日志
+//		SysOperLog log = new SysOperLog();
+//		
+//		//获取该角色的状态，获取状态id
+//		Role role = roleService.getRoleByroleId(roleId);
+//		//角色状态 0：有效  1：无效  2待删除
+//		String stateId = role.getState() == null ? "0":role.getState();
+//		
+//		//审核操作
+//		int result = roleService.rolePass(roleId, stateId);
+//		
+//		//根据用户状态进行不同操作
+//		if(result > 0 && stateId.equals("1")){//角色审核
+//			log.setContent("角色审核，角色ID:"+roleId);
+//			log.setOperType(Constants.SYSLOG_EDIT);
+//			log.setTitle("角色审核");
+//		}else if(result > 0 && stateId.equals("2")){//角色删除	
+//			log.setContent("角色删除，角色ID:"+roleId);
+//			log.setOperType(Constants.SYSLOG_DELETE);
+//			log.setTitle("角色删除");
+//		}
+//		log.setLogType(Constants.SYSLOG_SYS);
+//		log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
+//		request.setAttribute(Constants.LOG_RECORD, log);
+//		return CommonUtils.wrapObject("");
+		return null;
 	}
 	
 	

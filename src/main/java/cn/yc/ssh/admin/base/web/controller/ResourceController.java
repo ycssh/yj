@@ -1,10 +1,5 @@
 package cn.yc.ssh.admin.base.web.controller;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -25,12 +20,12 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.Resource;
-import cn.yc.ssh.admin.base.entity.User;
+import cn.yc.ssh.admin.base.mybatis.model.Resource;
+import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.base.service.ResourceService;
 import cn.yc.ssh.admin.base.service.RoleService;
+import cn.yc.ssh.admin.base.service.UserService;
 import cn.yc.ssh.common.CommonUtils;
-import cn.yc.ssh.common.FileUtils;
 
 @Controller
 @RequestMapping("/resource")
@@ -63,14 +58,7 @@ public class ResourceController {
     @RequestMapping(value="tree", method = RequestMethod.GET)
     @RequiresPermissions("admin:resource:tree")
     public @ResponseBody List<Resource> tree() {
-		//获取用户
-		User user = (User) SecurityUtils.getSubject().getSession().getAttribute(Constants.CURRENT_USER);
-		//获取用户ID
-		Long userId = user.getId();
-		//获取用户访问sys_resource权限 "no" 代表无访问权限  ， "XTZY"代表系统资源, "YWZY"代办业务资源,"all"代表全部资源
-		String power = roleService.resTypeForNowUser(userId);
-		//根据用户角色可访问的资源权限 获取数种应该显示的资源
-    	return resourceService.treeByPower(power);
+		return resourceService.findAll();
     }
 
     @RequiresPermissions("admin:resource:create")
@@ -125,13 +113,6 @@ public class ResourceController {
         return CommonUtils.wrapObject("");
     }
     
-    @RequestMapping("/frontList")
-    public @ResponseBody List<Resource> frontList(Integer start,Integer limit){
-    	List<Resource> resources = resourceService.frontList(start,limit);
-    	
-    	return resources;
-    }
-    
     @RequestMapping(value = "/uploadPic/{id}")
     public String uploadPicPage(@PathVariable("id") Long id, Model model) {
         model.addAttribute("resId", id);
@@ -141,52 +122,52 @@ public class ResourceController {
     @SuppressWarnings("rawtypes")
 	@RequestMapping("/uploadPic/upload")
     public @ResponseBody Map uploadPic(@RequestParam CommonsMultipartFile impFile,Long id){
-    	
-    	try {
-			String fileName = FileUtils.saveFile(impFile);
-			Resource r = resourceService.findOne(id);
-			r.setPicName(fileName);
-			
-			resourceService.updatePic(r);
-			return CommonUtils.wrapObject("");
-		} catch (Exception e) {
-			
-			e.printStackTrace();
-			return CommonUtils.wrapError("出错了");
-		}
+    	return null;
+//    	try {
+//			String fileName = FileUtils.saveFile(impFile);
+//			Resource r = resourceService.findOne(id);
+//			r.setPicName(fileName);
+//			
+//			resourceService.updatePic(r);
+//			return CommonUtils.wrapObject("");
+//		} catch (Exception e) {
+//			
+//			e.printStackTrace();
+//			return CommonUtils.wrapError("出错了");
+//		}
     }
     
     @RequestMapping("/uploadPic/showPic")
 	public void readFile(Long resId,HttpServletResponse response){
-		
-		String fileFullName = resourceService.findOne(resId).getPicName();
-		File f = new File(fileFullName);
-		
-		String fileName = fileFullName.substring(fileFullName.lastIndexOf("\\")+1);
-		try {
-			
-			response.reset();
-			// 设置response的Header
-			response.addHeader("Content-Disposition", "attachment;filename="
-					+ new String(fileName.getBytes("utf-8"), "ISO-8859-1"));
-			response.addHeader("Content-Length", "" + f.length());
-			response.setContentType("application/octet-stream");
-			
-			InputStream is = new FileInputStream(f);
-			
-			byte[] buff = new byte[1024];
-			int len = 0;
-			
-			OutputStream os = new BufferedOutputStream(response.getOutputStream());
-			while((len = is.read(buff))!=-1){
-				os.write(buff, 0, len);
-			}
-			os.flush();
-			is.close();
-			os.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		
+//		String fileFullName = resourceService.findOne(resId).getPicName();
+//		File f = new File(fileFullName);
+//		
+//		String fileName = fileFullName.substring(fileFullName.lastIndexOf("\\")+1);
+//		try {
+//			
+//			response.reset();
+//			// 设置response的Header
+//			response.addHeader("Content-Disposition", "attachment;filename="
+//					+ new String(fileName.getBytes("utf-8"), "ISO-8859-1"));
+//			response.addHeader("Content-Length", "" + f.length());
+//			response.setContentType("application/octet-stream");
+//			
+//			InputStream is = new FileInputStream(f);
+//			
+//			byte[] buff = new byte[1024];
+//			int len = 0;
+//			
+//			OutputStream os = new BufferedOutputStream(response.getOutputStream());
+//			while((len = is.read(buff))!=-1){
+//				os.write(buff, 0, len);
+//			}
+//			os.flush();
+//			is.close();
+//			os.close();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 
 }

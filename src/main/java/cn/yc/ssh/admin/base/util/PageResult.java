@@ -2,6 +2,10 @@ package cn.yc.ssh.admin.base.util;
 
 import java.util.List;
 
+import cn.yc.ssh.admin.base.mybatis.model.Role;
+
+import com.github.pagehelper.Page;
+
 /**
  * @author 作者姓名 yc E-mail: ycssh2@163.com
  * @version 创建时间：2014-5-14 下午02:24:35 类说明 分页工具类
@@ -31,6 +35,10 @@ public class PageResult<T> {
 		super();
 		this.rows = rows;
 		this.total = total;
+	}
+	
+	public static PageResult toPage(Page page){
+		return new PageResult(page, (int)page.getTotal());
 	}
 
 }

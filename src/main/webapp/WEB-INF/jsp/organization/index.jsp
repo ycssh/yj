@@ -255,7 +255,7 @@ function deptDelete(){
 	<ul id="tree"  class="ztree" style="margin-top: 5px;"></ul>
 </div>
 <div data-options="region:'center',href:'',title:'列表'" style="overflow: hidden;" id="center">
-	<table id="dg" class="easyui-datagrid">
+	<table id="dg" >
 		<thead>  
 			<tr> 
 				<th data-options="field:'ck',checkbox:true"></th>

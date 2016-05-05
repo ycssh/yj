@@ -24,11 +24,10 @@ import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.Resource;
-import cn.yc.ssh.admin.base.entity.Role;
-import cn.yc.ssh.admin.base.entity.User;
+import cn.yc.ssh.admin.base.mybatis.model.Resource;
+import cn.yc.ssh.admin.base.mybatis.model.Role;
+import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.base.service.UserService;
-import cn.yc.ssh.admin.base.web.exception.DataCompleteException;
 
 public class UserRealm extends AuthorizingRealm {
 
@@ -93,10 +92,10 @@ public class UserRealm extends AuthorizingRealm {
             ipRetryCount.incrementAndGet();
             throw new UnknownAccountException();//没找到帐号
         }
-        if(!user.getPassword().equals(user.getPwd())){
-        	throw new DataCompleteException();//数据完整性
-        }
-        if(!"0".equals(user.getLocked())) {
+//        if(!user.getPassword().equals(user.getPwd())){
+//        	throw new DataCompleteException();//数据完整性
+//        }
+        if(user.getLocked()!=0) {
             throw new LockedAccountException(); //帐号锁定
         }
         //交给AuthenticatingRealm使用CredentialsMatcher进行密码匹配,也可以自定义实现

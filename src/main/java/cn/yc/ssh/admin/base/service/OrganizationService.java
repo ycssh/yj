@@ -2,23 +2,26 @@ package cn.yc.ssh.admin.base.service;
 
 import java.util.List;
 
-import cn.yc.ssh.admin.base.entity.Organization;
-import cn.yc.ssh.admin.base.util.PageResult;
+import cn.yc.ssh.admin.base.mybatis.model.Organization;
 import cn.yc.ssh.admin.base.util.Pagination;
+
+import com.github.pagehelper.Page;
 
 public interface OrganizationService {
 
+	public Organization createOrganization(Organization organization);
 
-    public Organization createOrganization(Organization organization);
-    public Organization updateOrganization(Organization organization);
-    public void deleteOrganization(Long organizationId);
+	public Organization updateOrganization(Organization organization);
 
-    Organization findOne(Long organizationId);
-    List<Organization> findAll();
+	public void deleteOrganization(Long organizationId);
 
+	Organization findOne(Long organizationId);
 
-    public List<Organization> findByParent(Long parentId);
-    
-	public PageResult<Organization> find(Organization organization, Pagination page);
-	public PageResult<Organization> findByPID(Long pId, Pagination page);
+	List<Organization> findAll();
+
+	public List<Organization> findByParent(Long parentId);
+
+	public Page<Organization> find(Organization organization, Pagination page);
+
+	public Page<Organization> findByPID(Long pId, Pagination page);
 }

@@ -21,12 +21,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.Organization;
+import cn.yc.ssh.admin.base.mybatis.model.Organization;
 import cn.yc.ssh.admin.base.service.OrganizationService;
-import cn.yc.ssh.admin.base.util.PageResult;
 import cn.yc.ssh.admin.base.util.Pagination;
 import cn.yc.ssh.admin.log.SysOperLog;
 import cn.yc.ssh.common.CommonUtils;
+
+import com.github.pagehelper.Page;
 
 @Controller
 @RequestMapping("/organization")
@@ -44,9 +45,7 @@ public class OrganizationController {
 	@RequestMapping(value = "/list")
 	@RequiresPermissions("organization:index")
 	public @ResponseBody
-	PageResult<Organization> list(Organization organization, Pagination page,Long pId) {
-//		return organizationService.find(organization, page);
-		
+	Page<Organization> list(Organization organization, Pagination page,Long pId) {
 		return organizationService.findByPID(pId,page);
 	}
 

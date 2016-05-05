@@ -36,7 +36,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		            <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="queryTeacher()">查询</a>
 			    </div>
 		    </div>
-			<table id="dg" class="easyui-datagrid" style="" toolbar="#tb">
+			<table id="dg"  style="" toolbar="#tb">
 				<thead>  
 				        <tr>  
 							<th field="ck" checkbox="true"></th>

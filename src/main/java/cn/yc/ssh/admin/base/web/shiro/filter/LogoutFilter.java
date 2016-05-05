@@ -10,15 +10,11 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.dao.ISyslogDAO;
 import cn.yc.ssh.admin.base.entity.User;
 import cn.yc.ssh.admin.log.SysOperLog;
 
 public class LogoutFilter extends
 		org.apache.shiro.web.filter.authc.LogoutFilter {
-
-	@Resource
-	private ISyslogDAO syslogDAO;
 
 	@Override
 	public String getRedirectUrl(ServletRequest request,
@@ -35,7 +31,7 @@ public class LogoutFilter extends
 			_log.setOperType(1);
 			_log.setOpertime(new Date());
 			_log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-			syslogDAO.add(_log);
+//			syslogDAO.add(_log);
 		}
 		return "login";
 	}

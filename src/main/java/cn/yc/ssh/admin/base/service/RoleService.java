@@ -3,10 +3,11 @@ package cn.yc.ssh.admin.base.service;
 import java.util.List;
 import java.util.Set;
 
-import cn.yc.ssh.admin.base.entity.Resource;
-import cn.yc.ssh.admin.base.entity.Role;
-import cn.yc.ssh.admin.base.util.PageResult;
+import cn.yc.ssh.admin.base.mybatis.model.Resource;
+import cn.yc.ssh.admin.base.mybatis.model.Role;
 import cn.yc.ssh.admin.base.util.Pagination;
+
+import com.github.pagehelper.Page;
 
 public interface RoleService {
 
@@ -31,7 +32,7 @@ public interface RoleService {
      * @return
      */
     Set<String> findPermissions(Long[] roleIds);
-	public List<Resource> findByRole(Long roleId);
+	public List<Resource> findResByRole(Long roleId);
 	
 	/**
 	 * 分页查询
@@ -39,9 +40,10 @@ public interface RoleService {
 	 * @param role
 	 * @return
 	 */
-	public PageResult<Role> find(Pagination page, Role role);
-	public List<Resource> findResources(Long roleId);
-	public void saveResources(Long roleId, String resources ,String power);
+	public Page<Role> find(Pagination page, Role role);
+	
+	public void saveResources(Long roleId, String resources);
+	
 	public List<Role> listAll();
 	
 	

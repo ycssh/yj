@@ -13,7 +13,7 @@
 
 </head>
 <body>
-	<table id="table" class="easyui-datagrid">
+	<table id="table" >
 		<thead>
 			<tr>
 				<th data-options="field:'startHour'" width="30%">开始(时)</th>
