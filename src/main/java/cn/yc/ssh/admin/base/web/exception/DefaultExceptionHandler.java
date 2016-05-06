@@ -1,5 +1,7 @@
 package cn.yc.ssh.admin.base.web.exception;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Date;
 
 import javax.annotation.Resource;
@@ -10,8 +12,8 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 
 import cn.yc.ssh.admin.Constants;
 import cn.yc.ssh.admin.base.entity.Message;
@@ -20,7 +22,7 @@ import cn.yc.ssh.admin.base.service.IMessageService;
 import cn.yc.ssh.admin.base.service.UserService;
 import cn.yc.ssh.admin.log.SysOperLog;
 
-public class DefaultExceptionHandler implements HandlerExceptionResolver {
+public class DefaultExceptionHandler extends SimpleMappingExceptionResolver {
 
 	@Resource
 	private UserService userService; 
@@ -31,6 +33,26 @@ public class DefaultExceptionHandler implements HandlerExceptionResolver {
 	public ModelAndView resolveException(HttpServletRequest request,
 			HttpServletResponse response, Object handler, Exception ex) {
 		ex.printStackTrace();
+		
+		String requestType = request.getHeader("X-Requested-With");  
+		boolean ajaxMethod = false;
+        if (requestType != null && requestType.equalsIgnoreCase("XMLHttpRequest")) {  
+            ajaxMethod = true;  
+        } else {  
+            ajaxMethod = false;  
+        }  
+        if(ajaxMethod){
+        	 // 增加异常判断
+        	response.setContentType("application/json;charset=utf-8");
+            try {
+            	 PrintWriter writer = response.getWriter();  
+                 writer.write("非常抱歉，服务器错误");  
+				writer.flush(); 
+			} catch (IOException e) {
+				e.printStackTrace();
+			}  
+            return null;  
+        }
 		if(UnauthorizedException.class.getName().equals(ex.getClass().getName())){
 			ModelAndView mv = new ModelAndView();
 	        mv.addObject("exception", ex);

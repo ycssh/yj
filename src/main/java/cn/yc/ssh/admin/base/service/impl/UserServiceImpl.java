@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
 		User user = new User();
 		user.setUsername(username);
 		Page<User> page = userMapper.select(user, new RowBounds(1,1));
-		return page.get(0);
+		return page.size()>0?page.get(0):null;
 	}
 
 	/**
@@ -159,10 +159,14 @@ public class UserServiceImpl implements UserService {
 		if(StringUtils.hasLength(roles)){
 			List<UserRole> userRoles = new ArrayList<UserRole>();
 			for(String role:roles.split(",")){
-				UserRole userRole = new UserRole();
-				userRole.setUserId(id);
-				userRole.setRoleId(Long.parseLong(role));
+				if(StringUtils.hasLength(role)){
+					UserRole userRole = new UserRole();
+					userRole.setUserId(id);
+					userRole.setRoleId(Long.parseLong(role));
+					userRoles.add(userRole);
+				}
 			}
+			if(userRoles.size()>0)
 			userRoleMapper.insertBatch(userRoles);
 		}
 	}

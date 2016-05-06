@@ -109,7 +109,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	    	$.messager.alert('提示','操作成功');
 			$("#appendChild").dialog('close');
 	    	$('#dg').datagrid('reload');
-		},"json");
+		},"json").error(function(data){
+			$.messager.alert('提示',data.responseText)
+		});
 	}
 	</script>
 	

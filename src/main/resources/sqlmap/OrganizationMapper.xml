@@ -36,9 +36,9 @@
  	 <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id"> 
             SELECT seq_id.nextval AS value from dual
         </selectKey>
-    insert into SYS_ORGANIZATION ( NAME, PARENTID, 
+    insert into SYS_ORGANIZATION (id, NAME, PARENTID, 
       POWER)
-    values (#{name,jdbcType=VARCHAR}, #{parentId,jdbcType=DECIMAL}, 
+    values (#{id,jdbcType=DECIMAL}, #{name,jdbcType=VARCHAR}, #{parentId,jdbcType=DECIMAL}, 
       #{power,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="cn.yc.ssh.admin.base.mybatis.model.Organization" >

@@ -10,14 +10,10 @@
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 <jsp:include page="../inc.jsp"></jsp:include>
-<link rel="stylesheet"
-	href="<%=basePath%>static/zTree3.5/css/zTreeStyle/zTreeStyle.css"></link>
-<script
-	src="<%=basePath%>static/zTree3.5/js/jquery.ztree.all-3.5.min.js"></script>
-<script type="text/javascript"
-	src="${pageContext.request.contextPath}/static/js/CryptoJS/components/core.js"></script>
-<script type="text/javascript"
-	src="${pageContext.request.contextPath}/static/js/CryptoJS/rollups/aes.js"></script>
+<link rel="stylesheet" href="<%=basePath%>static/zTree3.5/css/zTreeStyle/zTreeStyle.css"></link>
+<script src="<%=basePath%>static/zTree3.5/js/jquery.ztree.all-3.5.min.js"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath}/static/js/CryptoJS/components/core.js"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath}/static/js/CryptoJS/rollups/aes.js"></script>
 <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/CryptoJS/rollups/md5.js"></script>
 <script type="text/javascript">
 //全局变量：
@@ -47,9 +43,6 @@ $(function() {
 	$('#table-reset').unbind('click').click(function(){resetPassword();});//重置密码
 	$('#table-colse').unbind('click').click(function(){colse();});//锁/解锁
 	$('#table-canNot').unbind('click').click(function(){canNot();});//注销
-	
-	$('#table-locked-is').unbind('click').click(function(){lockedIs();});//账号审核
-	$('#table-userRole-is').unbind('click').click(function(){userRoleIs();});//角色分配审核
 
 
 	$('#tableSearchButton').unbind('click').click(function(){tableLoad();});//查询按钮
@@ -101,14 +94,14 @@ var tableLoad = function(){
 		onRowContextMenu:onRowContextMenu
 	});
 	
-	$("#dg").datagrid('hideColumn', "userId");
+	$("#dg").datagrid('hideColumn', "id");
 };
 
 //锁/解锁    激活 -》锁定    锁定->激活
 var colse = function(){
 	var row = $('#dg').datagrid('getSelected');
 	if(!row){
-    	$.messager.alert('提示','请选择要上要审核的记录');
+    	$.messager.alert('提示','请选择要操作的记录');
     	return ;
 	}
 	//获取账号状态
@@ -118,10 +111,6 @@ var colse = function(){
     	return ;
 	}
 
-	if(row.loginName=="sgtc_sjgl"||row.loginName=="sgtc_sfgl"||row.loginName=="sgtc_shgl"||row.loginName=="sgtc_ywgl"||row.loginName=="sgtc_xtgl"){
-    	$.messager.alert('提示','管理员账号不可操作');
-    	return ;
-	}
 	//根据状态判断题提示语
 	var mes = "";
 	if(lockedId==0){
@@ -132,12 +121,11 @@ var colse = function(){
 	
 	//锁定/激活操作
 	if(confirm("确定"+mes+"?")){
-		$.post("<%=basePath%>user/closeOrOpen",{userId:row.userId,locked:row.locked})	
+		$.post("<%=basePath%>user/closeOrOpen",{userId:row.id,locked:row.locked})	
 			.done(function(data){
 				$.messager.alert('提示',mes+'成功');
 		    	$('#dg').datagrid('reload');
-			})
-			.faile(function(){
+			}).faile(function(){
 				alert("操作失败");
 			});
 	}
@@ -178,60 +166,6 @@ var canNot = function(){
 	
 };
 
-//账号审核,账户状态由未激活-》激活      或者      待删除 - 》 删除
-var lockedIs = function(){
-	var row = $('#dg').datagrid('getSelected');
-	if(!row){
-    	$.messager.alert('提示','请选择要上要审核的记录');
-    	return ;
-	}
-	//获取账号状态，审核的状态需要为未激活
-	var lockedId = row.locked;
-	if( !(lockedId==3 || lockedId == 4) ){
-		$.messager.alert('提示','账号需为未激活或待删除状态');
-    	return ;
-	}
-	
-	$("#appendChild").window({
-	    title: '账号审核',
-	    width: 400,
-	   // hight:200,
-	    //closed: false,
-	    //cache: false,
-		href : "<%=basePath%>user/lockedIs/"+row.userId,
-	    onBeforeClose:function(){
-	    	$('#dg').datagrid('reload');
-	    }
-	});
-}
-
-//角色分配审核 无效 ->有效
-var userRoleIs = function(){
-	var row = $('#dg').datagrid('getSelected');
-	if(!row){
-    	$.messager.alert('提示','请选择要上要审核的记录');
-    	return ;
-	}
-	
-	var roleName = row.roleName;
-	if(roleName == null || roleName.length == 0){
-		$.messager.alert('提示','当前用户未分配角色，无法审核');
-    	return ;
-	}
-	
-	$("#appendChild").window({
-	    title: '角色分配审核',
-	    width: 400,
-	    //hight:200,
-	    //closed: false,
-	    //cache: false,
-		href : "<%=basePath%>user/userRoleIs/"+row.userId,
-	    onBeforeClose:function(){
-	    	$('#dg').datagrid('reload');
-	    }
-	});
-	
-};
 
 //左侧部门数加载函数
 var setting = {
@@ -315,10 +249,6 @@ function userEdit(){
     	$.messager.alert('提示','请选择要编辑的记录');
     	return ;
 	}
-	if(row.loginName=="sgtc_sjgl"||row.loginName=="sgtc_sfgl"||row.loginName=="sgtc_shgl"||row.loginName=="sgtc_ywgl"||row.loginName=="sgtc_xtgl"){
-    	$.messager.alert('提示','管理员不可编辑');
-    	return ;
-	}
 	$("#window").window({
 		title : "修改",
 		width : 700,
@@ -332,8 +262,8 @@ function userEdit(){
 	$('#form').form('reset');
 	$("#form").form('load',row);
 	
-	$("#name").val(row.realName);
-	$("#username").val(row.loginName);
+	$("#name").val(row.name);
+	$("#username").val(row.username);
 	$("#username").attr("readonly","readonly");
 	$("#userNameTips").show();
 		
@@ -351,14 +281,10 @@ function userDelete(){
     	$.messager.alert('提示','请选择要上删除的记录');
     	return ;
 	}
-	if(row.loginName=="sgtc_sjgl"||row.loginName=="sgtc_sfgl"||row.loginName=="sgtc_shgl"||row.loginName=="sgtc_ywgl"||row.loginName=="sgtc_xtgl"){
-    	$.messager.alert('提示','管理员不能删除');
-    	return ;
-	}
 	if(confirm("确定删除?")){
-		$.post("<%=basePath%>user/delete/"+row.userId)
+		$.post("<%=basePath%>user/delete/"+row.id)
 			.done(function(){
-				$.messager.alert('提示','已改为待删除，需要账号审批后删除');
+				$.messager.alert('提示','删除成功');
 		    	$('#dg').datagrid('reload');
 			})
 			.faile(function(){});
@@ -381,27 +307,33 @@ function saveItem(){
 	//由于无法传探究往后台传输用户ID，故运用AJAX传输。
 	//若为修改页面，这重置页面的时候不是全置为空，而是职位所选内容
 	if($('#isAddOrUpdate').val() == 0 && row){
-		
 		//用户ID
-		var userId = row.userId;
+		var userId = row.id;
 		//修改后的姓名
-		var userName =$("#name").val() ;
+		var name =$("#name").val() ;
 		//获取用户登录账号
-		var loginName =$("#username").val();
+		var username =$("#username").val();
 		//修改用户姓名
-		$.post('<%=basePath%>user/userUpdate',{userId:userId,userName:userName,loginName:loginName})
-			.done(function(data){
-				if(data > 0){
+		$.ajax({
+			type : 'post',  
+            url : '<%=basePath%>user/create',   
+            data:{id:userId,name:name},
+            contentType: "application/json; charset=utf-8",
+            async: false,//禁止ajax的异步操作，使之顺序执行。  
+            dataType : 'json',  
+			success:function(data){
+				if(data==""){
 					$.messager.alert('提示','操作成功');
 					$("#window").dialog('close');
 					$('#dg').datagrid('reload');
 				}else{
-					alert("操作失败");
+					alert(data);
 				}
-			})
-			.faile(function(){alert("修改失败");});
-		
-		
+			},
+			error:function(data){
+				$.messager.alert('提示',data.responseText)
+			}
+		});
 		
 	}else{
 		if($.trim($("#password").val())!=$.trim($("#passworda").val())){
@@ -424,7 +356,20 @@ function saveItem(){
 			alert("密码必须包含数字和字母的8-20位字符");
 			return false;
 		};		
-		$('#form').submit();	
+		$('#form').form('submit', {
+		    success:function(d){
+		    	if(d==""){
+			    	$.messager.alert('提示','操作成功');
+					$("#appendChild").dialog('close');
+			    	$('#dg').datagrid('reload');
+		    	}else{
+			    	$.messager.alert('提示',d);
+		    	}
+		    },
+		    error:function(){
+		    	$.messager.alert('提示','操作失败');
+		    }
+		});
 	}
 }
 
@@ -518,16 +463,12 @@ function role(){
 	    	$.messager.alert('提示','请选择要上编辑的记录');
 	    	return ;
 		}
-		if(row.loginName=="sgtc_sjgl"||row.loginName=="sgtc_sfgl"||row.loginName=="sgtc_shgl"||row.loginName=="sgtc_ywgl"||row.loginName=="sgtc_xtgl"){
-	    	$.messager.alert('提示','管理员不能再分配角色');
-	    	return ;
-		}
 		$("#appendChild").window({
 		    title: '编辑角色',
 		    width: 600,
 		    height:350,
 		    cache: false,
-			href : "<%=basePath%>user/role/"+row.userId,
+			href : "<%=basePath%>user/role/"+row.id,
 		    onBeforeClose:function(){
 		    	$('#dg').datagrid('reload');
 		    }
@@ -579,6 +520,7 @@ function resetPassword()
 					<th data-options="field:'ck',checkbox:true"></th>
 					<th data-options="field:'id'" align="center">用户Id</th>
 					<th data-options="field:'username'" width="20%" align="center">用户名</th>
+					<th data-options="field:'locked'" width="20%" align="center">用户状态</th>
 					<th data-options="field:'name'" width="20%" align="center">姓名</th>
 					<th
 						data-options="field:'roleName',formatter:function(value,row,index){value = value==null?'':value; return'<span title='+value+'>'+value+'</span>'} "
@@ -598,7 +540,6 @@ function resetPassword()
 			<a href="javascript:void(0);" id ="table-remove" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
 			<a href="javascript:void(0);" id ="table-reset" class="easyui-linkbutton" iconCls="icon-reset" plain="true">重置密码</a> 
 			<a href="javascript:void(0);" id ="table-colse" class="easyui-linkbutton" iconCls="icon-remove" plain="true">锁/解锁</a>
-			<a href="javascript:void(0);" id ="table-canNot" class="easyui-linkbutton" iconCls="icon-remove" plain="true">注销</a>
 	</shiro:hasPermission>	
 					
 	<shiro:hasPermission name="admin:user:setRole">					

@@ -124,32 +124,21 @@ public class UserController {
 
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	@RequiresPermissions("user:index")
-	public void create(User user, RedirectAttributes redirectAttributes,String md5,
+	public @ResponseBody String create(User user, RedirectAttributes redirectAttributes,String md5,
 			HttpServletResponse response, HttpServletRequest request)
 			throws Exception {
-		response.setContentType("text/html;charset=UTF-8");
-		PrintWriter out = response.getWriter();
 		SysOperLog log = new SysOperLog();
 		if (user.getId() == null) {
 			User u = userService.findByUsername(user.getUsername());
 			if (u != null) {
-				out.print("{\"success\":false,\"msg\":\"用户名为"
-						+ user.getUsername() + "的用户已经存在，请输入其他用户名！\"}");
-				out.flush();
-				return;
-			}
-			if(!MD5Util.MD5(user.getPassword()).equalsIgnoreCase(md5)){
-				out.print("密码完整性遭到破坏");
-				out.flush();
-				return;
+				return "用户名为" + user.getUsername() + "的用户已经存在，请输入其他用户名！";
 			}
 			String password = AES.Decrypt(user.getPassword(), SecurityUtils.getSubject().getSession().getAttribute("aesKey").toString());
 			if (password.length() < 8 || password.length() > 20) {
 				response.setContentType("text/html;charset=UTF-8");
-				out.print("密码必须在8-20位.");
-				out.flush();
-				return;
+				return "密码必须在8-20位.";
 			}
+			user.setLocked(0L);
 			user.setPassword(password);
 			userService.createUser(user);
 			log.setContent("新增用户:" + user.getUsername());
@@ -164,8 +153,7 @@ public class UserController {
 		log.setLogType(Constants.SYSLOG_SYS);
 		log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
 		request.setAttribute(Constants.LOG_RECORD, log);
-		out.print("{\"success\":true,\"msg\":\"\"}");
-		out.flush();
+		return "";
 	}
 
 	@RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)

@@ -67,12 +67,12 @@
   		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id"> 
             SELECT seq_id.nextval AS value from dual
         </selectKey>
-    insert into SYS_USER (NAME, ORGANIZATION_ID, 
+    insert into SYS_USER (id,NAME, ORGANIZATION_ID, 
       PHONE, PASSWORD, SALT, 
       LOCKED, USERNAME, CREATE_PERSION, 
       CREATE_TIME, UPDATE_PERSON, UPDATE_TIME
       )
-    values (#{name,jdbcType=VARCHAR}, #{organizationId,jdbcType=DECIMAL}, 
+    values (#{id,jdbcType=DECIMAL}, #{name,jdbcType=VARCHAR}, #{organizationId,jdbcType=DECIMAL}, 
       #{phone,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{salt,jdbcType=VARCHAR}, 
       #{locked,jdbcType=DECIMAL}, #{username,jdbcType=VARCHAR}, #{createPersion,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=DATE}, #{updatePerson,jdbcType=VARCHAR}, #{updateTime,jdbcType=DATE}

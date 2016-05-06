@@ -214,8 +214,4 @@
 		<error-code>505</error-code>
 		<location>/clientException.jsp</location>
 	</error-page>
-	<error-page>
-		<error-code>500</error-code>
-		<location>/clientException.jsp</location>
-	</error-page>
 </web-app>
