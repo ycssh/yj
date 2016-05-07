@@ -2,7 +2,6 @@ package cn.yc.ssh.admin.base.web.shiro.filter;
 
 import java.util.Date;
 
-import javax.annotation.Resource;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
@@ -10,7 +9,7 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.User;
+import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.log.SysOperLog;
 
 public class LogoutFilter extends

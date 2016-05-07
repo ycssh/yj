@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.Resource.ResourceType;
 import cn.yc.ssh.admin.base.mybatis.model.Resource;
+import cn.yc.ssh.admin.base.mybatis.model.Resource.ResourceType;
 import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.base.service.UserService;
 import cn.yc.ssh.admin.base.web.bind.annotation.CurrentUser;

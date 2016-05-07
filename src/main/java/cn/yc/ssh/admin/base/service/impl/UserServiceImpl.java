@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import cn.yc.ssh.admin.base.entity.UserAllInfo;
 import cn.yc.ssh.admin.base.mybatis.mapper.ResourceMapper;
 import cn.yc.ssh.admin.base.mybatis.mapper.RoleMapper;
 import cn.yc.ssh.admin.base.mybatis.mapper.UserMapper;
@@ -23,7 +22,6 @@ import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.base.mybatis.model.UserRole;
 import cn.yc.ssh.admin.base.service.RoleService;
 import cn.yc.ssh.admin.base.service.UserService;
-import cn.yc.ssh.admin.base.util.PageResult;
 import cn.yc.ssh.admin.base.util.Pagination;
 
 import com.github.pagehelper.Page;
@@ -177,66 +175,10 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserAllInfo findOneUseInfo(Long userId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<User> findAll() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public PageResult<UserAllInfo> pageSelect(Pagination page,
-			String loginName, String realName, Integer locked,
-			String syURoleId, Integer organizationId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int lockedOrDeleteUser(String userId, String locdedId) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int updateUserByUserId(String userId, String userName,
-			String loginName) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int sysRoleUpdate(String userId) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public List<User> findWithOutAdmin() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void updateState(int state, String username) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public int updateLockedByUseerID(String userId, int locked) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void changeresetPassword(Long id, String passwordaa) {
-		// TODO Auto-generated method stub
-		
+	public void updateState(int i, String username) {
+		User user = findByUsername(username);
+		user.setLocked((long)i);
+		userMapper.updateByPrimaryKeySelective(user);
 	}
 
 }

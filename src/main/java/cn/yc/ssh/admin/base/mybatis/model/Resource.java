@@ -20,6 +20,8 @@ public class Resource {
 
     private String picname;
     private Boolean isParent ;
+    
+    private String state;
     private List<Resource> children;
 
     private Long resType;
@@ -128,6 +130,14 @@ public class Resource {
 
 	public List<Resource> getChildren() {
 		return children;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
 	}
     
     

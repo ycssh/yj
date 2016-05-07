@@ -10,7 +10,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
 </head>
 <body >
-<table id="table"  >
+<table id="table"  class="easyui-datagrid">
     <thead>
         <tr>
             <th data-options="field:'username'" width="30%">用户名</th>

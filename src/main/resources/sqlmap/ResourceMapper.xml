@@ -54,7 +54,7 @@
       SHOWINFRONT, PICNAME, RES_TYPE
       )
     values (#{id,jdbcType=DECIMAL}, #{name,jdbcType=VARCHAR}, #{url,jdbcType=VARCHAR}, 
-      #{parentid,jdbcType=DECIMAL}, #{type,jdbcType=VARCHAR}, #{permission,jdbcType=VARCHAR}, 
+      #{parentId,jdbcType=DECIMAL}, #{type,jdbcType=VARCHAR}, #{permission,jdbcType=VARCHAR}, 
       #{showinfront,jdbcType=VARCHAR}, #{picname,jdbcType=VARCHAR}, #{resType,jdbcType=DECIMAL}
       )
   </insert>
@@ -70,7 +70,7 @@
       <if test="url != null" >
         URL,
       </if>
-      <if test="parentid != null" >
+      <if test="parentId != null" >
         PARENTID,
       </if>
       <if test="type != null" >
@@ -99,8 +99,8 @@
       <if test="url != null" >
         #{url,jdbcType=VARCHAR},
       </if>
-      <if test="parentid != null" >
-        #{parentid,jdbcType=DECIMAL},
+      <if test="parentId != null" >
+        #{parentId,jdbcType=DECIMAL},
       </if>
       <if test="type != null" >
         #{type,jdbcType=VARCHAR},
@@ -128,8 +128,8 @@
       <if test="url != null" >
         URL = #{url,jdbcType=VARCHAR},
       </if>
-      <if test="parentid != null" >
-        PARENTID = #{parentid,jdbcType=DECIMAL},
+      <if test="parentId != null" >
+        PARENTID = #{parentId,jdbcType=DECIMAL},
       </if>
       <if test="type != null" >
         TYPE = #{type,jdbcType=VARCHAR},
@@ -153,7 +153,7 @@
     update SYS_RESOURCE
     set NAME = #{name,jdbcType=VARCHAR},
       URL = #{url,jdbcType=VARCHAR},
-      PARENTID = #{parentid,jdbcType=DECIMAL},
+      PARENTID = #{parentId,jdbcType=DECIMAL},
       TYPE = #{type,jdbcType=VARCHAR},
       PERMISSION = #{permission,jdbcType=VARCHAR},
       SHOWINFRONT = #{showinfront,jdbcType=VARCHAR},

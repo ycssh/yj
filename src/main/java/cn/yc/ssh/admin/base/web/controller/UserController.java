@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.UserAllInfo;
 import cn.yc.ssh.admin.base.mybatis.model.Resource;
 import cn.yc.ssh.admin.base.mybatis.model.Role;
 import cn.yc.ssh.admin.base.mybatis.model.User;
@@ -43,8 +42,6 @@ import cn.yc.ssh.admin.base.util.Message;
 import cn.yc.ssh.admin.base.util.PageResult;
 import cn.yc.ssh.admin.base.util.Pagination;
 import cn.yc.ssh.admin.log.SysOperLog;
-
-import com.github.pagehelper.Page;
 
 @Controller
 @RequestMapping("/user")
@@ -77,15 +74,7 @@ public class UserController {
 			Pagination page) {
 		return PageResult.toPage(userService.find(user, cascade, page));
 	}
-
-	@RequestMapping("listall")
-	@RequiresPermissions(value={"user:index","admin:workflowmgt:index"},logical=Logical.OR)
-	public @ResponseBody
-	List<User> list(Model model) {
-		return userService.findAll();
-	}
 	
-
     @RequestMapping("/resources")
     public @ResponseBody List<Resource> frontList(){
 		String username = SecurityUtils.getSubject().getPrincipal().toString();
@@ -195,37 +184,6 @@ public class UserController {
 		model.addAttribute("user", userService.findOne(id));
 		model.addAttribute("op", "重置密码密码");
 		return "user/resetPassword";
-	}
-
-	@RequestMapping(value = "/resetPassword/{id}", method = RequestMethod.POST)
-	@RequiresPermissions("user:index")
-	public void resetPassword(Model model, String passwordaa,String md55,
-			@PathVariable("id") Long id, HttpServletResponse response, HttpServletRequest request)
-			throws Exception {
-			if(!MD5Util.MD5(passwordaa).equalsIgnoreCase(md55)){
-				response.setContentType("text/html;charset=UTF-8");
-				PrintWriter out = response.getWriter();
-				out.print("密码完整性遭到破坏");
-				out.flush();
-				return;
-			}
-			passwordaa = AES.Decrypt(passwordaa, SecurityUtils.getSubject()
-					.getSession().getAttribute("aesKey").toString());
-			if (passwordaa.length() < 8 || passwordaa.length() > 20) {
-				response.setContentType("text/html;charset=UTF-8");
-				PrintWriter out = response.getWriter();
-				out.print("密码必须在8-20位.");
-				out.flush();
-				return;
-			}
-			userService.changeresetPassword(id, passwordaa);
-			SysOperLog log = new SysOperLog();
-			log.setContent("重置密码:" + id);
-			log.setOperType(Constants.SYSLOG_DELETE);
-			log.setTitle("重置密码");
-			log.setLogType(Constants.SYSLOG_SYS);
-			log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-			request.setAttribute(Constants.LOG_RECORD, log);
 	}
 
 	/***
@@ -345,23 +303,6 @@ public class UserController {
 		return new Message(true, "");
 	}
 
-	@RequestMapping("listNew")
-	@RequiresPermissions("user:index")
-	public @ResponseBody
-	PageResult<UserAllInfo> listNew(String isSelect, Pagination page,
-			String loginName, String realName, Integer locked, String syURoleId,
-			Integer organizationId) {
-		// 防止easy-ui的重复查询访问
-		if (isSelect == null || isSelect.length() == 0
-				|| (!(isSelect.equals("1")))) {
-			return null;
-		}
-
-		// 获取数据
-		return userService.pageSelect(page, loginName, realName, locked,
-				syURoleId, organizationId);
-	}
-	
 	/**
 	 * 跳转到分配角色
 	 * 
@@ -378,182 +319,6 @@ public class UserController {
 		model.addAttribute("notIn", all);
 		model.addAttribute("userId", id);
 		return "user/role";
-	}
-	
-	/**
-	 * 弹出账号审核页面
-	 * 
-	 * @param id
-	 * @param model
-	 * @return
-	 */
-	@RequiresPermissions("admin:user:pass")
-	@RequestMapping(value = "/lockedIs/{id}", method = RequestMethod.GET)
-	public String lockedIs(@PathVariable("id") Long id, Model model) {
-		setCommonData(model);
-		model.addAttribute("user", userService.findOneUseInfo(id));
-		return "user/lockedPass";
-	}
-
-	/**
-	 * 弹出角色分配审核页面
-	 * 
-	 * @param id
-	 * @param model
-	 * @return
-	 */
-	@RequiresPermissions("admin:user:pass")
-	@RequestMapping(value = "/userRoleIs/{id}", method = RequestMethod.GET)
-	public String userRoleIs(@PathVariable("id") Long id, Model model) {
-		setCommonData(model);
-		model.addAttribute("user", userService.findOneUseInfo(id));
-		return "user/userRolePass";
-	}
-	
-	//用户状态 锁/解锁    激活 -》锁定    锁定->激活
-	@RequestMapping("closeOrOpen")
-	@RequiresPermissions("user:index")
-	public @ResponseBody Integer closeOrOpen(String userId, String locked,HttpServletRequest request){
-		//影响行数
-		int sucRol = 0;
-		
-		//状态转为整型
-		int lockedInt = Integer.valueOf(locked);
-		
-		//激活 -》锁定
-		if(lockedInt == 0){
-			sucRol = userService.updateLockedByUseerID(userId, 1);
-			
-			// 日志
-			if (sucRol > 0) {
-				SysOperLog log = new SysOperLog();
-				log.setContent("锁定账号，用户id:" + userId);
-				log.setOperType(Constants.SYSLOG_EDIT);
-				log.setTitle("锁定账号");
-				log.setLogType(Constants.SYSLOG_SYS);
-				log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-				request.setAttribute(Constants.LOG_RECORD, log);
-			}
-		}
-		
-		//锁定->激活
-		if(lockedInt == 1){
-			sucRol = userService.updateLockedByUseerID(userId, 0);
-			
-			// 激活
-			if (sucRol > 0) {
-				SysOperLog log = new SysOperLog();
-				log.setContent("激活账号，用户id:" + userId);
-				log.setOperType(Constants.SYSLOG_EDIT);
-				log.setTitle("激活账号");
-				log.setLogType(Constants.SYSLOG_SYS);
-				log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-				request.setAttribute(Constants.LOG_RECORD, log);
-			}
-		}
-		
-		return sucRol;
-	}
-	
-	//用户状态 注销    激活 -》注销
-	@RequestMapping("canNot")
-	@RequiresPermissions("user:index")
-	public @ResponseBody Integer canNot(String userId, String locked,HttpServletRequest request){		
-		int sucRol = userService.updateLockedByUseerID(userId, 2);
-		
-		// 日志
-		if (sucRol > 0) {
-			SysOperLog log = new SysOperLog();
-			log.setContent("注销账号，用户id:" + userId);
-			log.setOperType(Constants.SYSLOG_EDIT);
-			log.setTitle("注销账号");
-			log.setLogType(Constants.SYSLOG_SYS);
-			log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-			request.setAttribute(Constants.LOG_RECORD, log);
-		}
-		
-		return sucRol;
-	}
-
-	/**
-	 * 激活或删除账户
-	 * 
-	 * @param userId
-	 * @return
-	 */
-	@RequestMapping("lockedUpdate")
-	@RequiresPermissions("user:index")
-	public @ResponseBody
-	Integer lockedUpdate(String userId, String locdedId,HttpServletRequest request) {
-
-		int sucNum = userService.lockedOrDeleteUser(userId, locdedId);
-
-		// 日志
-		if (sucNum > 0) {
-			SysOperLog log = new SysOperLog();
-			log.setContent("激活或删除账号状态，用户id:" + userId);
-			log.setOperType(Constants.SYSLOG_EDIT);
-			log.setTitle("激活或删除账号状态");
-			log.setLogType(Constants.SYSLOG_SYS);
-			log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-			request.setAttribute(Constants.LOG_RECORD, log);
-		}
-
-		return sucNum;
-	}
-
-	/**
-	 * 将用户角色分配状态该有有效
-	 * 
-	 * @param userId
-	 * @return
-	 */
-	@RequestMapping("sysRoleUpdate")
-	@RequiresPermissions("user:index")
-	public @ResponseBody
-	Integer sysRoleUpdate(String userId,HttpServletRequest request) {
-		int sucNum = userService.sysRoleUpdate(userId);
-
-		// 日志
-		if (sucNum > 0) {
-			SysOperLog log = new SysOperLog();
-			log.setContent("将用户角色分配状态修改为有效，用户id:" + userId);
-			log.setOperType(Constants.SYSLOG_EDIT);
-			log.setTitle("将用户角色分配状态修改为有效");
-			log.setLogType(Constants.SYSLOG_SYS);
-			log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-			request.setAttribute(Constants.LOG_RECORD, log);
-		}
-
-		return sucNum;
-	}
-
-	/**
-	 * 用户修改
-	 * 
-	 * @param userId
-	 * @return
-	 */
-	@RequestMapping("userUpdate")
-	@RequiresPermissions("user:index")
-	public @ResponseBody
-	Integer userUpdate(String userId, String userName, String loginName,HttpServletRequest request) {
-
-		int sucNum = userService
-				.updateUserByUserId(userId, userName, loginName);
-
-		// 日志
-		if (sucNum > 0) {
-			SysOperLog log = new SysOperLog();
-			log.setContent("编辑用户，用户id:" + userId);
-			log.setOperType(Constants.SYSLOG_EDIT);
-			log.setTitle("编辑用户");
-			log.setLogType(Constants.SYSLOG_SYS);
-			log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-			request.setAttribute(Constants.LOG_RECORD, log);
-		}
-
-		return sucNum;
 	}
 
 }

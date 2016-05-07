@@ -45,7 +45,27 @@ public class ResourceServiceImpl implements ResourceService {
 
 	@Override
 	public List<Resource> findAll() {
-		return resourceMapper.selectAll();
+		List<Resource> resources = resourceMapper.selectAll();
+
+		List<Resource> resources2 = new ArrayList<Resource>();
+		Set<Long> set = new HashSet<Long>();
+		for (Resource resource : resources) {
+			while (!set.contains(resource.getId())) {
+				set.add(resource.getId());
+				List<Resource> children = new ArrayList<Resource>();
+				for (Resource resource2 : resources) {
+					if (resource2.getParentId().equals(resource.getId())) {
+						children.add(resource2);
+						resource.setState("closed");
+					}
+				}
+				resource.setChildren(children);
+			}
+			if (resource.getParentId() == 0) {
+				resources2.add(resource);
+			}
+		}
+		return resources2;
 	}
 
 	@Override
@@ -141,6 +161,7 @@ public class ResourceServiceImpl implements ResourceService {
 					}
 				}
 				resource.setChildren(children);
+				resource.setState("closed");
 			}
 			if (resource.getParentId() == 0) {
 				resources2.add(resource);

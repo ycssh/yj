@@ -56,7 +56,6 @@ public class ResourceController {
     
 
     @RequestMapping(value="tree", method = RequestMethod.GET)
-    @RequiresPermissions("admin:resource:tree")
     public @ResponseBody List<Resource> tree() {
 		return resourceService.findAll();
     }
