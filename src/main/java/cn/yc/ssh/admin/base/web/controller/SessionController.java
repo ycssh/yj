@@ -23,7 +23,6 @@ import cn.yc.ssh.admin.base.mybatis.model.OnlineUser;
 import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.base.util.PageResult;
 import cn.yc.ssh.admin.base.util.Pagination;
-import freemarker.template.SimpleDate;
 
 @Controller
 @RequestMapping("/sessions")
@@ -44,7 +43,7 @@ public class SessionController {
 		int p = page.getPage();
 		int row = page.getRows();
 		List<Session> list = new ArrayList<Session>();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH24:mm:ss");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		for (Session s : sessions) {
 			if (s.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY) != null) {
 				list.add(s);

@@ -28,6 +28,7 @@ import cn.yc.ssh.admin.base.mybatis.model.Resource;
 import cn.yc.ssh.admin.base.mybatis.model.Role;
 import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.base.service.UserService;
+import cn.yc.ssh.admin.base.web.exception.MaliciousLoginException;
 
 public class UserRealm extends AuthorizingRealm {
 
@@ -85,8 +86,9 @@ public class UserRealm extends AuthorizingRealm {
     		ipRetryCache.put(ip, ipRetryCount);
         }
         if(ipRetryCount.incrementAndGet() > 10){
-//			throw new MaliciousLoginException();
+			throw new MaliciousLoginException();
         }
+        List<Resource> resources = userService.findResByUse(430L);
         User user = userService.findByUsername(username);
         if(user == null) {
             ipRetryCount.incrementAndGet();

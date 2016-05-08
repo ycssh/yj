@@ -2,6 +2,7 @@ package cn.yc.ssh.admin.base.web.controller;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,9 +14,9 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authc.credential.CredentialsMatcher;
-import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
+import org.apache.shiro.session.InvalidSessionException;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
@@ -33,7 +34,6 @@ import cn.yc.ssh.admin.base.mybatis.model.Resource;
 import cn.yc.ssh.admin.base.mybatis.model.Role;
 import cn.yc.ssh.admin.base.mybatis.model.User;
 import cn.yc.ssh.admin.base.realm.AES;
-import cn.yc.ssh.admin.base.realm.MD5Util;
 import cn.yc.ssh.admin.base.realm.UserRealm;
 import cn.yc.ssh.admin.base.service.OrganizationService;
 import cn.yc.ssh.admin.base.service.RoleService;
@@ -42,6 +42,8 @@ import cn.yc.ssh.admin.base.util.Message;
 import cn.yc.ssh.admin.base.util.PageResult;
 import cn.yc.ssh.admin.base.util.Pagination;
 import cn.yc.ssh.admin.log.SysOperLog;
+
+import com.github.pagehelper.Page;
 
 @Controller
 @RequestMapping("/user")
@@ -72,14 +74,30 @@ public class UserController {
 	public @ResponseBody
 	PageResult<User> list(Model model, User user, Boolean cascade,
 			Pagination page) {
-		return PageResult.toPage(userService.find(user, cascade, page));
+		Page<User> users = userService.find(user, cascade, page);
+		for(User u:users){
+			List<Role> roles = userService.findRolesByUser(u.getId());
+			String roleName = "";
+			if(roles!=null){
+				for(int i=0;i<roles.size();i++){
+					roleName+=roles.get(i).getName();
+					if(i!=roles.size()-1){
+						roleName+=","	;
+					}
+				}
+			}
+			u.setRoleName(roleName);
+				
+		}
+		return PageResult.toPage(users);
 	}
-	
-    @RequestMapping("/resources")
-    public @ResponseBody List<Resource> frontList(){
+
+	@RequestMapping("/resources")
+	public @ResponseBody
+	List<Resource> frontList() {
 		String username = SecurityUtils.getSubject().getPrincipal().toString();
 		User user = userService.findByUsername(username);
-    	List<Resource> resources = userService.findResByUse(user.getId());
+		List<Resource> resources = userService.findResByUse(user.getId());
 
 		List<Resource> resources2 = new ArrayList<Resource>();
 		Set<Long> set = new HashSet<Long>();
@@ -88,18 +106,20 @@ public class UserController {
 				set.add(resource.getId());
 				List<Resource> children = new ArrayList<Resource>();
 				for (Resource resource2 : resources) {
-					if (resource2.getParentId().equals(resource.getId())&&"menu".equals(resource2.getType())) {
+					if (resource2.getParentId().equals(resource.getId())
+							&& "menu".equals(resource2.getType())) {
 						children.add(resource2);
 					}
 				}
 				resource.setChildren(children);
 			}
+			System.out.println(resource.getId()+"\t"+resource.getParentId());
 			if (resource.getParentId() == 0) {
 				resources2.add(resource);
 			}
 		}
 		return resources2;
-    }
+	}
 
 	@RequestMapping(value = "/add/{organizationId}", method = RequestMethod.GET)
 	@RequiresPermissions("user:index")
@@ -113,7 +133,8 @@ public class UserController {
 
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	@RequiresPermissions("user:index")
-	public @ResponseBody String create(User user, RedirectAttributes redirectAttributes,String md5,
+	public @ResponseBody
+	String create(User user, RedirectAttributes redirectAttributes, String md5,
 			HttpServletResponse response, HttpServletRequest request)
 			throws Exception {
 		SysOperLog log = new SysOperLog();
@@ -122,7 +143,9 @@ public class UserController {
 			if (u != null) {
 				return "用户名为" + user.getUsername() + "的用户已经存在，请输入其他用户名！";
 			}
-			String password = AES.Decrypt(user.getPassword(), SecurityUtils.getSubject().getSession().getAttribute("aesKey").toString());
+			String password = AES.Decrypt(user.getPassword(), SecurityUtils
+					.getSubject().getSession().getAttribute("aesKey")
+					.toString());
 			if (password.length() < 8 || password.length() > 20) {
 				response.setContentType("text/html;charset=UTF-8");
 				return "密码必须在8-20位.";
@@ -185,6 +208,19 @@ public class UserController {
 		model.addAttribute("op", "重置密码密码");
 		return "user/resetPassword";
 	}
+	
+	@RequestMapping(value = "/resetPassword/{id}", method = RequestMethod.POST)
+	@RequiresPermissions("user:index")
+	public @ResponseBody String resetPassword(@PathVariable("id") Long id, Model model, String passwordaa) throws InvalidSessionException, Exception {
+		User user = userService.findOne(id);
+		String password = AES.Decrypt(passwordaa, SecurityUtils.getSubject().getSession().getAttribute("aesKey").toString());
+		if (password.length() < 8 || password.length() > 20) {
+			return "密码必须在8-20位.";
+		}
+		user.setPassword(password);
+		userService.updateUser(user);
+		return "";
+	}
 
 	/***
 	 * 修改自己密码
@@ -203,83 +239,67 @@ public class UserController {
 	}
 
 	@RequestMapping(value = "/changePassword", method = RequestMethod.POST)
-	public void changePassword(Model model, String passworda, String password,String md5,
-			HttpServletResponse response, HttpServletRequest request)
+	public void changePassword(Model model, String passworda, String password,
+			String md5, HttpServletResponse response, HttpServletRequest request)
 			throws Exception {
-			if(!MD5Util.MD5(passworda).equalsIgnoreCase(md5)){
-				response.setContentType("text/html;charset=UTF-8");
-				PrintWriter out = response.getWriter();
-				out.print("密码完整性遭到破坏");
-				out.flush();
-				return;
-			}
-			Session session = SecurityUtils.getSubject().getSession();
-			if(session.getAttribute("aesKey")==null){
-		    	String key = null;
-		    	key = new SecureRandomNumberGenerator().nextBytes().toHex().substring(0,16);
-		    	session.setAttribute("aesKey", key);
-			}
-			passworda = AES.Decrypt(passworda, SecurityUtils.getSubject().getSession().getAttribute("aesKey").toString());
-			if (passworda.length() < 8 || passworda.length() > 20) {
-				response.setContentType("text/html;charset=UTF-8");
-				PrintWriter out = response.getWriter();
-				out.print("密码必须在8-20位.");
-				out.flush();
-				return;
-			}
-			String pwd = AES.Decrypt(password, SecurityUtils.getSubject()
-					.getSession().getAttribute("aesKey").toString());
-			if (pwd.equals(passworda)) {
-				response.setContentType("text/html;charset=UTF-8");
-				PrintWriter out = response.getWriter();
-				out.print("新密码不能和原始密码一致，请重新输入");
-				out.flush();
-				return;
-			}
-			User user = (User) SecurityUtils.getSubject().getSession()
-					.getAttribute(Constants.CURRENT_USER);
+		Session session = SecurityUtils.getSubject().getSession();
+		if (session.getAttribute("aesKey") == null) {
+			String key = null;
+			key = new SecureRandomNumberGenerator().nextBytes().toHex()
+					.substring(0, 16);
+			session.setAttribute("aesKey", key);
+		}
+		passworda = AES.Decrypt(passworda, SecurityUtils.getSubject()
+				.getSession().getAttribute("aesKey").toString());
+		if (passworda.length() < 8 || passworda.length() > 20) {
+			response.setContentType("text/html;charset=UTF-8");
+			PrintWriter out = response.getWriter();
+			out.print("密码必须在8-20位.");
+			out.flush();
+			return;
+		}
+		String pwd = AES.Decrypt(password, SecurityUtils.getSubject()
+				.getSession().getAttribute("aesKey").toString());
+		if (pwd.equals(passworda)) {
+			response.setContentType("text/html;charset=UTF-8");
+			PrintWriter out = response.getWriter();
+			out.print("新密码不能和原始密码一致，请重新输入");
+			out.flush();
+			return;
+		}
+		User user = (User) SecurityUtils.getSubject().getSession()
+				.getAttribute(Constants.CURRENT_USER);
 
-			Subject subject = SecurityUtils.getSubject();
-			UsernamePasswordToken token = new UsernamePasswordToken(subject
-					.getPrincipal().toString(), password);
+		Subject subject = SecurityUtils.getSubject();
+		UsernamePasswordToken token = new UsernamePasswordToken(subject
+				.getPrincipal().toString(), password);
 
-			SimpleAuthenticationInfo info = new SimpleAuthenticationInfo(
-					user.getUsername(), user.getPassword(),
-					ByteSource.Util.bytes(user.getCredentialsSalt()),
-					userRealm.getName());
-			boolean matchs = credentialsMatcher.doCredentialsMatch(token, info);
-			if (matchs) {
-				userService.changePassword(user.getId(), passworda);
-				SysOperLog log = new SysOperLog();
-				log.setContent("用户修改密码:" + user.toString());
-				log.setOperType(Constants.SYSLOG_EDIT);
-				log.setTitle("修改密码");
-				log.setLogType(Constants.SYSLOG_BUSINESS);
-				log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
-				request.setAttribute(Constants.LOG_RECORD, log);
-			} else {
-				response.setContentType("text/html;charset=UTF-8");
-				PrintWriter out = response.getWriter();
-				out.print("原始密码不正确，请重新输入");
-				out.flush();
-			}
-	}
-
-	@RequestMapping(value = "/{id}/changePassword", method = RequestMethod.POST)
-	@RequiresPermissions("user:index")
-	public String changePassword(@PathVariable("id") Long id,
-			String newPassword, RedirectAttributes redirectAttributes) {
-		userService.changePassword(id, newPassword);
-		redirectAttributes.addFlashAttribute("msg", "修改密码成功");
-		return "redirect:/user";
+		SimpleAuthenticationInfo info = new SimpleAuthenticationInfo(
+				user.getUsername(), user.getPassword(),
+				ByteSource.Util.bytes(user.getCredentialsSalt()),
+				userRealm.getName());
+		boolean matchs = credentialsMatcher.doCredentialsMatch(token, info);
+		if (matchs) {
+			userService.changePassword(user.getId(), passworda);
+			SysOperLog log = new SysOperLog();
+			log.setContent("用户修改密码:" + user.toString());
+			log.setOperType(Constants.SYSLOG_EDIT);
+			log.setTitle("修改密码");
+			log.setLogType(Constants.SYSLOG_BUSINESS);
+			log.setResult(Constants.SYSLOG_RESULT_SUCCESS);
+			request.setAttribute(Constants.LOG_RECORD, log);
+		} else {
+			response.setContentType("text/html;charset=UTF-8");
+			PrintWriter out = response.getWriter();
+			out.print("原始密码不正确，请重新输入");
+			out.flush();
+		}
 	}
 
 	private void setCommonData(Model model) {
 		model.addAttribute("organizationList", organizationService.findAll());
 		model.addAttribute("roleList", roleService.findAll());
 	}
-
-
 
 	/**
 	 * 保存分配角色
@@ -321,4 +341,16 @@ public class UserController {
 		return "user/role";
 	}
 
+	/**
+	 * 跳转到分配角色
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@RequiresPermissions("admin:user:edit")
+	@RequestMapping("state/{state}/{username}")
+	public @ResponseBody void updateState(@PathVariable int state,
+			@PathVariable String username) {
+		userService.updateState(state, username);
+	}
 }

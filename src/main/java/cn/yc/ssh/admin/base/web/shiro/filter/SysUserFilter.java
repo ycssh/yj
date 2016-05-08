@@ -51,43 +51,6 @@ public class SysUserFilter extends PathMatchingFilter {
         	}
         	User user = userService.findByUsername(username);
         	session.setAttribute(Constants.CURRENT_USER, user);
-			String sql = "select ip from sysoper_log where userid=? and content='登录' order by opertime desc";
-			List<SysOperLog> logs = jdbcTemplate.query(CommonUtils.getPavSql(sql, 0, 5), new BeanPropertyRowMapper<SysOperLog>(SysOperLog.class),user.getUsername());
-			if(!CollectionUtils.isEmpty(logs)){
-				String[] ip = currentIP.split("\\.");
-				boolean iPUnusually = true;
-				for(SysOperLog log:logs){
-					if(log.getIp().equals("0:0:0:0:0:0:0:1")){
-						log.setIp("127.0.0.1");
-					}
-					String[] ipArr = log.getIp().split("\\.");
-					if(ipArr[0].equals(ip[0])&&ipArr[1].equals(ip[1])){
-						iPUnusually = false;
-						break;
-					}
-				}
-				if(iPUnusually){
-					SysOperLog log = new SysOperLog();
-					log.setTitle("IP异常");
-					log.setOperType(1);
-					log.setIp(currentIP);
-					log.setUname(user.getName());
-					log.setUserid(user.getUsername());
-					log.setContent("IP异常");
-					log.setOpertime(new Date());
-					log.setLogType(Constants.SYSLOG_SYS);
-					log.setResult(Constants.SYSLOG_RESULT_FAIL);
-//					syslogDAO.add(log);
-	
-					Message message = new Message();
-					message.setContent("IP异常");
-					message.setIp(session.getHost());
-					message.setMsgTime(new Date());
-					message.setRead(0);
-					message.setUserName(user.getName());
-					messageService.save(message);
-				}
-			}
 
 			SysOperLog _log = new SysOperLog();
 			_log.setTitle("登录");

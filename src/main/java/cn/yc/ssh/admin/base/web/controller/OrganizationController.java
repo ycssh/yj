@@ -61,9 +61,9 @@ public class OrganizationController {
 		}
 		List<Organization> list = new ArrayList<Organization>();
 		list = organizationService.findByParent(parentId);
-		if(parentId==0){
-			list.add(new Organization(0L,"根组织"));
-		}
+//		if(parentId==0){
+//			list.add(new Organization(0L,"根组织"));
+//		}
 		if (parentId == 0) {
 			if(list==null||list.size()==0){
 				return list;

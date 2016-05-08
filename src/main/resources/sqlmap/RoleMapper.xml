@@ -33,6 +33,19 @@
       </if>
     </where>
   </select>
+  <select id="findAll" resultMap="BaseResultMap" parameterType="cn.yc.ssh.admin.base.mybatis.model.Role" >
+    select 
+    <include refid="Base_Column_List" />
+    from SYS_ROLE
+    <where>
+    	<if test="role != null and role!=''" >
+        and ROLE= #{role,jdbcType=VARCHAR}
+      </if>
+    	<if test="name != null and name!=''" >
+        and name= #{name,jdbcType=VARCHAR}
+      </if>
+    </where>
+  </select>
   <select id="selectByUser" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select 
     <include refid="Base_Column_List" />
@@ -44,7 +57,7 @@
   </delete>
   <insert id="insert" parameterType="cn.yc.ssh.admin.base.mybatis.model.Role" >
 		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id"> 
-            SELECT seq_id.nextval AS value from dual
+            SELECT LAST_INSERT_ID()
         </selectKey>
     insert into SYS_ROLE (ID, NAME, ROLE, 
       STATE, CREATE_PERSION, CREATE_TIME, 

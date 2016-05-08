@@ -13,9 +13,8 @@ import cn.yc.ssh.admin.base.service.IPBlackListService;
 
 @Service
 public class IPBlackListServiceImpl implements IPBlackListService {
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
     
 	@Override
 	public List<IPBlackList> list() {

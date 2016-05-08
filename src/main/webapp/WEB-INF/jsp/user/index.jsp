@@ -110,7 +110,6 @@ var colse = function(){
 		$.messager.alert('提示','账号需为激活或锁定状态');
     	return ;
 	}
-
 	//根据状态判断题提示语
 	var mes = "";
 	if(lockedId==0){
@@ -118,16 +117,21 @@ var colse = function(){
 	}else{
 		mes = "激活";
 	}
-	
+	lockedId = lockedId=='0'?'1':'0';
 	//锁定/激活操作
 	if(confirm("确定"+mes+"?")){
-		$.post("<%=basePath%>user/closeOrOpen",{userId:row.id,locked:row.locked})	
-			.done(function(data){
+		$.ajax({
+			url:"<%=basePath%>user/state/"+lockedId+"/"+row.username,
+			success:function(data){
 				$.messager.alert('提示',mes+'成功');
 		    	$('#dg').datagrid('reload');
-			}).faile(function(){
-				alert("操作失败");
-			});
+			},
+			error:function(data){
+				$.messager.alert('提示',data.responseText)
+			},
+			type : 'post'
+		})
+		
 	}
 		
 };
@@ -239,7 +243,7 @@ function userAdd(){
 	$("#passwordaTr").show();
 	$("#organizationId").val(organizationId);
 	$("#username").removeAttr("readonly");
-	$("#userNameTips").hide();
+	$("#usernameTips").hide();
 }
 
 //修改按钮
@@ -265,7 +269,7 @@ function userEdit(){
 	$("#name").val(row.name);
 	$("#username").val(row.username);
 	$("#username").attr("readonly","readonly");
-	$("#userNameTips").show();
+	$("#usernameTips").show();
 		
 	$("#password").val("password");
 	$("#passworda").val("password"); 
@@ -485,11 +489,11 @@ function resetPassword()
 	var createDiv = "<div id='resetpwds'><div/>";
 	$(createDiv).dialog({
 		title: '密码设置',
-		width: 300,
+		width: 350,
 		height: 250,
 		closed: false,
 		cache: false,
-		href: '${pageContext.request.contextPath}/user/resetPassword/'+row.userId,
+		href: '${pageContext.request.contextPath}/user/resetPassword/'+row.id,
 		modal : true,
 		onClose : function() {
 		$(this).dialog('destroy');
@@ -520,12 +524,11 @@ function resetPassword()
 					<th data-options="field:'ck',checkbox:true"></th>
 					<th data-options="field:'id'" align="center">用户Id</th>
 					<th data-options="field:'username'" width="20%" align="center">用户名</th>
-					<th data-options="field:'locked'" width="20%" align="center">用户状态</th>
+					<th data-options="field:'locked',formatter:function(value,row,index){return value=='0'?'正常':'锁定';}" width="20%" align="center">用户状态</th>
 					<th data-options="field:'name'" width="20%" align="center">姓名</th>
 					<th
-						data-options="field:'roleName',formatter:function(value,row,index){value = value==null?'':value; return'<span title='+value+'>'+value+'</span>'} "
+						data-options="field:'roleName'"
 						width="20%" align="center">角色名称</th>
-					<th data-options="field:'syURoleName'" width="10%" align="center">角色分配状态</th>
 				</tr>
 			</thead>
 		</table>
@@ -605,7 +608,7 @@ function resetPassword()
 						<td><input maxlength="50" class="easyui-validatebox"
 							type="text" validType="length[0,12]" invalidMessage="不能超过12个字符！"
 							id="username" name="username" style="width: 250px"
-							data-options="required:true" /><font id="userNameTips"
+							data-options="required:true" /><font id="usernameTips"
 							color="red" size="2">用户名不允许修改！</font></td>
 					</tr>
 

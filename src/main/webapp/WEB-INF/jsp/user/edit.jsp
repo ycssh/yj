@@ -1,4 +1,4 @@
-<%@page import="cn.yc.ssh.admin.base.entity.User"%>
+<%@page import="cn.yc.ssh.admin.base.mybatis.model.User"%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%

@@ -1,11 +1,9 @@
-<%@page import="cn.yc.ssh.admin.base.entity.User"%>
+<%@page import="cn.yc.ssh.admin.base.mybatis.model.User"%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%
 String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
-
-User u = (User)request.getAttribute("user");
 %>
 <html>
 <head><meta http-equiv = "X-UA-Compatible" content = "IE=edge,chrome=1" /> 
@@ -28,7 +26,7 @@ User u = (User)request.getAttribute("user");
 			    
 	    		<tr>
 		    		<td>姓名:</td>
-		    		<td><input class="easyui-validatebox" type="text" id="name" name="name" disabled="disabled" value="${user.name}" data-options="required:true"/></td>
+		    		<td><input class="easyui-validatebox"  style="width:100%" type="text" id="name" name="name" disabled="disabled" value="${user.name}" data-options="required:true"/></td>
 	    		</tr>
 	    		<tr>
 		    		<td>登录帐号:</td>

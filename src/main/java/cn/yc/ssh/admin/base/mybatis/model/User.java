@@ -26,6 +26,9 @@ public class User {
     private String updatePerson;
 
     private Date updateTime;
+    
+
+    private String roleName;
 
     public Long getId() {
         return id;
@@ -125,5 +128,13 @@ public class User {
 
 	public String getCredentialsSalt() {
 		return username+salt;
+	}
+
+	public String getRoleName() {
+		return roleName;
+	}
+
+	public void setRoleName(String roleName) {
+		this.roleName = roleName;
 	}
 }

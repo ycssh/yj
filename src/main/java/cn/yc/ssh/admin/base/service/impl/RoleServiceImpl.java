@@ -55,7 +55,7 @@ public class RoleServiceImpl implements RoleService {
 
 	@Override
 	public List<Role> findAll() {
-		 return roleMapper.selectByPage(null, new RowBounds(1,10000));
+		 return roleMapper.findAll();
 	}
 
 	@Override

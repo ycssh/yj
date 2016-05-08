@@ -24,4 +24,6 @@ public interface RoleMapper {
 	List<Role> selectByUser(Long userId);
 
 	Page<Role> selectByPage(Role role, RowBounds rowBounds);
+
+	List<Role> findAll();
 }

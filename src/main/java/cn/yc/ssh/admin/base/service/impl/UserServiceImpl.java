@@ -56,6 +56,9 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User updateUser(User user) {
+		if(user.getPassword()!=null){
+			passwordHelper.encryptPassword(user);
+		}
 		userMapper.updateByPrimaryKeySelective(user);
 		return user;
 	}

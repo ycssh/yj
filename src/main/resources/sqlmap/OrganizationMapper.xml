@@ -34,7 +34,7 @@
   </delete>
   <insert id="insert" parameterType="cn.yc.ssh.admin.base.mybatis.model.Organization" >
  	 <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id"> 
-            SELECT seq_id.nextval AS value from dual
+            SELECT LAST_INSERT_ID()
         </selectKey>
     insert into SYS_ORGANIZATION (id, NAME, PARENTID, 
       POWER)
