@@ -22,4 +22,6 @@ public interface UserMapper {
     Page<User> select(User user, RowBounds bounds);
     
     int selectCount(User user);
+
+	User findByUsername(String username);
 }

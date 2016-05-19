@@ -1,10 +1,8 @@
 package cn.yc.ssh.admin.base.web.shiro.filter;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
@@ -13,27 +11,17 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.PathMatchingFilter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.util.CollectionUtils;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.Message;
 import cn.yc.ssh.admin.base.mybatis.model.User;
-import cn.yc.ssh.admin.base.service.IMessageService;
 import cn.yc.ssh.admin.base.service.UserService;
 import cn.yc.ssh.admin.log.SysOperLog;
-import cn.yc.ssh.common.CommonUtils;
 
 public class SysUserFilter extends PathMatchingFilter {
 
     @Autowired
     private UserService userService;
-	@Resource
-	private IMessageService messageService; 
 
-	@Resource
-	private JdbcTemplate jdbcTemplate;
     @Override
     protected boolean onPreHandle(ServletRequest request, ServletResponse response, Object mappedValue) throws Exception {
 

@@ -96,8 +96,7 @@ public class UserServiceImpl implements UserService {
 	public User findByUsername(String username) {
 		User user = new User();
 		user.setUsername(username);
-		Page<User> page = userMapper.select(user, new RowBounds(1,1));
-		return page.size()>0?page.get(0):null;
+		return userMapper.findByUsername(username);
 	}
 
 	/**

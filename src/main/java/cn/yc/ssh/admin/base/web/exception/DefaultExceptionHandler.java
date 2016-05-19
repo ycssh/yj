@@ -2,7 +2,6 @@ package cn.yc.ssh.admin.base.web.exception;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -16,9 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.Message;
 import cn.yc.ssh.admin.base.mybatis.model.User;
-import cn.yc.ssh.admin.base.service.IMessageService;
 import cn.yc.ssh.admin.base.service.UserService;
 import cn.yc.ssh.admin.log.SysOperLog;
 
@@ -26,9 +23,6 @@ public class DefaultExceptionHandler extends SimpleMappingExceptionResolver {
 
 	@Resource
 	private UserService userService; 
-	
-	@Resource
-	private IMessageService messageService; 
 	
 	public ModelAndView resolveException(HttpServletRequest request,
 			HttpServletResponse response, Object handler, Exception ex) {
@@ -58,13 +52,6 @@ public class DefaultExceptionHandler extends SimpleMappingExceptionResolver {
 			log.setResult(Constants.SYSLOG_RESULT_FAIL);
 //			syslogDAO.add(log);
 			userService.updateState(1, user.getUsername());
-			Message message = new Message();
-			message.setContent("越权访问"+ex.getMessage());
-			message.setIp(session.getHost());
-			message.setMsgTime(new Date());
-			message.setRead(0);
-			message.setUserName(user.getName());
-			messageService.save(message);
 			if(ajaxMethod){
 	        	 // 增加异常判断
 	        	response.setContentType("application/json;charset=utf-8");

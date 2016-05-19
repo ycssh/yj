@@ -13,7 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import cn.yc.ssh.admin.Constants;
 import cn.yc.ssh.admin.base.entity.Dict;
-import cn.yc.ssh.admin.base.entity.SysInit;
+import cn.yc.ssh.admin.base.mybatis.model.SysInit;
 import cn.yc.ssh.admin.spring.SpringUtils;
 
 public class SysInitListener implements ServletContextListener {

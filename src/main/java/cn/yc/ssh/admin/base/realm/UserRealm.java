@@ -88,15 +88,11 @@ public class UserRealm extends AuthorizingRealm {
         if(ipRetryCount.incrementAndGet() > 10){
 			throw new MaliciousLoginException();
         }
-        List<Resource> resources = userService.findResByUse(430L);
         User user = userService.findByUsername(username);
         if(user == null) {
             ipRetryCount.incrementAndGet();
             throw new UnknownAccountException();//没找到帐号
         }
-//        if(!user.getPassword().equals(user.getPwd())){
-//        	throw new DataCompleteException();//数据完整性
-//        }
         if(user.getLocked()!=0) {
             throw new LockedAccountException(); //帐号锁定
         }

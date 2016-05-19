@@ -1,8 +1,6 @@
 package cn.yc.ssh.admin.log;
 
 import org.springframework.context.ApplicationListener;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 public class LogRecordListener implements ApplicationListener<LogRecordEvent> {
 

@@ -1,10 +1,7 @@
 package cn.yc.ssh.admin.credentials;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Resource;
 
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
@@ -22,13 +19,7 @@ import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.session.InvalidSessionException;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.Message;
 import cn.yc.ssh.admin.base.realm.AES;
-import cn.yc.ssh.admin.base.service.IMessageService;
-import cn.yc.ssh.admin.base.service.IPBlackListService;
-import cn.yc.ssh.admin.base.service.TimeBlackListService;
-import cn.yc.ssh.admin.base.web.exception.IPBlackListException;
-import cn.yc.ssh.admin.base.web.exception.TimeBlackListException;
 import cn.yc.ssh.admin.spring.SpringCacheManagerWrapper;
 
 /**
@@ -42,15 +33,6 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
     
     private Cache<String, AtomicInteger> ipRetryCache;
     
-    @Resource
-    private IPBlackListService ipBlackListService;
-    
-    @Resource
-    private TimeBlackListService timeBlackListService;
-	
-	@Resource
-	private IMessageService messageService; 
-    
     private CacheManager cacheManager;
 
     public RetryLimitHashedCredentialsMatcher(CacheManager cacheManager) {
@@ -62,12 +44,6 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
     @Override
     public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
     	String ip = SecurityUtils.getSubject().getSession().getHost();
-    	if(ipBlackListService.getStringList().contains(ip)){
-    		throw new IPBlackListException();
-    	}
-    	if(timeBlackListService.isTimeBlackList()){
-    		throw new TimeBlackListException();
-    	}
     	
         String username = (String)token.getPrincipal();
         //同一个用户名多次输入密码错误锁定
@@ -90,13 +66,7 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
             }
         }
         if(retryCount.incrementAndGet() > Integer.parseInt(pwdCount)) {
-			Message message = new Message();
-			message.setContent("连续输入密码错误");
-			message.setIp(ip);
-			message.setMsgTime(new Date());
-			message.setRead(0);
-			message.setUserName(username);
-			messageService.save(message);
+        	//连续输入密码错误
 			throw new ExcessiveAttemptsException();
         }
         if(ipRetryCount == null) {

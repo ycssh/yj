@@ -327,6 +327,19 @@
 		    <version>4.0.1</version>
 		</dependency>
 		
+		<dependency>
+	      <groupId>org.csource</groupId>
+	      <artifactId>fastdfs-client-java</artifactId>
+	      <version>5.0.5</version>
+	    </dependency>
+	     
+	    <!-- http://mvnrepository.com/artifact/com.artofsolving/jodconverter -->
+		<dependency>
+		    <groupId>com.artofsolving</groupId>
+		    <artifactId>jodconverter</artifactId>
+		    <version>2.2.1</version>
+		</dependency>
+	    
 	</dependencies>
 	
 	<build>

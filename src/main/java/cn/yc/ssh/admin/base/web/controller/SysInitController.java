@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.entity.SysInit;
+import cn.yc.ssh.admin.base.mybatis.model.SysInit;
 import cn.yc.ssh.admin.base.service.SysInitService;
 import cn.yc.ssh.admin.log.SysOperLog;
 

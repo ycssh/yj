@@ -22,10 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import cn.yc.ssh.admin.Constants;
-import cn.yc.ssh.admin.base.web.exception.DataCompleteException;
-import cn.yc.ssh.admin.base.web.exception.IPBlackListException;
 import cn.yc.ssh.admin.base.web.exception.MaliciousLoginException;
-import cn.yc.ssh.admin.base.web.exception.TimeBlackListException;
 import cn.yc.ssh.admin.log.SysOperLog;
 
 @Controller
@@ -57,11 +54,7 @@ public class LoginController {
 		}
         String exceptionClassName = (String)req.getAttribute("shiroLoginFailure");
         String error = null;
-        if(IPBlackListException.class.getName().equals(exceptionClassName)){
-        	error="你的IP地址已被列入黑名单，请联系系统管理员";
-        }else if(TimeBlackListException.class.getName().equals(exceptionClassName)){
-        	error="该时间段不允许访问，请联系系统管理员";
-        } else if(ExcessiveAttemptsException.class.getName().equals(exceptionClassName)){
+        if(ExcessiveAttemptsException.class.getName().equals(exceptionClassName)){
             @SuppressWarnings("unchecked")
 			Map<String,String> inits = (Map<String, String>) Constants.cache.get("sys_init");
             SysOperLog log = new SysOperLog();
@@ -72,7 +65,6 @@ public class LoginController {
 			log.setLogType(Constants.SYSLOG_SYS);
 			log.setResult(Constants.SYSLOG_RESULT_FAIL);
 			req.setAttribute(Constants.LOG_RECORD, log);
-
         	error="连续输入"+inits.get("pwdCount")+"次密码错误，帐号锁定"+inits.get("pwdTime")+"分钟";
         }else if(UnknownAccountException.class.getName().equals(exceptionClassName)) {
             SysOperLog log = new SysOperLog();
@@ -129,17 +121,6 @@ public class LoginController {
 			req.setAttribute(Constants.LOG_RECORD, log);
         	
         	error = "账号状态异常，请联系系统管理员";
-        }else if(DataCompleteException.class.getName().equals(exceptionClassName)){
-            SysOperLog log = new SysOperLog();
-			log.setContent("数据不完整，登陆失败");
-			log.setOperType(Constants.SYSLOG_SEARCH);
-			log.setTitle("数据不完整，登陆失败");
-			log.setUserid(req.getParameter("username"));
-			log.setLogType(Constants.SYSLOG_SYS);
-			log.setResult(Constants.SYSLOG_RESULT_FAIL);
-			req.setAttribute(Constants.LOG_RECORD, log);
-        	
-        	error = "数据不完整，请联系系统管理员";
         }
         else if(exceptionClassName != null) {
         	error = "登录错误";
